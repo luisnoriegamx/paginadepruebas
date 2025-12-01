@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASA 2000 - Soluciones en Instrumentación y Automatización Industrial</title>
+    <meta name="description" content="NASA 2000: Líder en instrumentación, automatización y control industrial en Monterrey, Nuevo León. Soluciones integrales para procesos industriales.">
+    
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Iconos -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-blue: #003366;
+            --secondary-blue: #004d99;
+            --accent-blue: #0066cc;
+            --light-blue: #e6f2ff;
+            --dark-gray: #333333;
+            --medium-gray: #666666;
+            --light-gray: #f5f5f5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--dark-gray);
+        }
+
+        .corporate-gradient {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        }
+
+        .section-padding {
+            padding: 5rem 0;
+        }
+
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-shadow {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-overlay {
+            background: rgba(0, 51, 102, 0.8);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-blue);
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-blue);
+        }
+        
+        /* Panel de Administración */
+        .admin-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 9999;
+            overflow-y: auto;
+        }
+        
+        .admin-panel.open {
+            right: 0;
+        }
+        
+        .admin-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .admin-overlay.show {
+            display: block;
+        }
+        
+        .editable:hover {
+            outline: 2px dashed #0066cc;
+            outline-offset: 2px;
+            cursor: pointer;
+        }
+        
+        .editable-active {
+            outline: 2px solid #0066cc !important;
+            background-color: rgba(0, 102, 204, 0.05) !important;
+        }
+        
+        .tab-button {
+            padding: 10px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .tab-button.active {
+            background-color: #0066cc;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .user-item {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 0;
+        }
+        
+        .user-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-gray-800">
+    <!-- Panel de Administración -->
+    <div class="admin-overlay" id="adminOverlay"></div>
+    
+    <div class="admin-panel" id="adminPanel">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">Panel de Administración</h3>
+                <button id="closeAdminPanel" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line text-2xl"></i>
+                </button>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">Usuario: <span id="adminUserDisplay">usuario</span></p>
+        </div>
+        
+        <!-- Tabs de Navegación -->
+        <div class="border-b border-gray-200">
+            <div class="flex px-6 pt-4 space-x-2">
+                <button id="tabContent" class="tab-button active" data-tab="content">
+                    <i class="ri-edit-line mr-2"></i>Contenido
+                </button>
+                <button id="tabUsers" class="tab-button" data-tab="users">
+                    <i class="ri-user-line mr-2"></i>Usuarios
+                </button>
+                <button id="tabSettings" class="tab-button" data-tab="settings">
+                    <i class="ri-settings-3-line mr-2"></i>Ajustes
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <!-- Tab: Edición de Contenido -->
+            <div id="contentTab" class="tab-content active">
+                <div class="mb-8">
+                    <h4 class="font-bold text-lg mb-4 text-gray-800">Edición de Contenido</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Texto Seleccionado</label>
+                            <input type="text" id="editText" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Color de Texto</label>
+                            <input type="color" id="editColor" class="w-full h-10 rounded-md border border-gray-300">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tamaño de Fuente</label>
+                            <select id="editFontSize" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="text-sm">Pequeño</option>
+                                <option value="text-base" selected>Normal</option>
+                                <option value="text-lg">Grande</option>
+                                <option value="text-xl">Extra Grande</option>
+                                <option value="text-2xl">XXL</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button id="btnBold" class="flex-1 py-2 px-3 bg-gray-200 rounded-md hover:bg-gray-300">
+                                <i class="ri-bold"></i>
+                            </button>
+                            <button id="btnItalic" class="flex-1 py-2 px-3 bg-gray-200 rounded-md hover:bg-gray-300">
+                                <i class="ri-italic"></i>
+                            </button>
+                            <button id="btnUnderline" class="flex-1 py-2 px-3 bg-gray-200 rounded-md hover:bg-gray-300">
+                                <i class="ri-underline"></i>
+                            </button>
+                        </div>
+                        
+                        <div>
+                            <button id="applyChanges" class="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                Aplicar Cambios
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gestión de Secciones -->
+                <div class="mb-8">
+                    <h4 class="font-bold text-lg mb-4 text-gray-800">Gestión de Secciones</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                            <span>Sección Hero</span>
+                            <button class="edit-section" data-section="hero" class="text-blue-600 hover:text-blue-800">
+                                <i class="ri-edit-line"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                            <span>Sección Nosotros</span>
+                            <button class="edit-section" data-section="nosotros" class="text-blue-600 hover:text-blue-800">
+                                <i class="ri-edit-line"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                            <span>Sección Servicios</span>
+                            <button class="edit-section" data-section="servicios" class="text-blue-600 hover:text-blue-800">
+                                <i class="ri-edit-line"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                            <span>Sección Productos</span>
+                            <button class="edit-section" data-section="productos" class="text-blue-600 hover:text-blue-800">
+                                <i class="ri-edit-line"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                            <span>Sección Contacto</span>
+                            <button class="edit-section" data-section="contacto" class="text-blue-600 hover:text-blue-800">
+                                <i class="ri-edit-line"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Gestión de Usuarios -->
+            <div id="usersTab" class="tab-content">
+                <div class="mb-8">
+                    <h4 class="font-bold text-lg mb-4 text-gray-800">Gestión de Usuarios</h4>
+                    
+                    <!-- Lista de Usuarios -->
+                    <div class="mb-6">
+                        <h5 class="font-medium text-gray-700 mb-3">Usuarios Registrados</h5>
+                        <div id="usersList" class="space-y-2">
+                            <!-- Los usuarios se cargarán aquí -->
+                        </div>
+                    </div>
+                    
+                    <!-- Formulario para Agregar Usuario -->
+                    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                        <h5 class="font-medium text-gray-700 mb-3">Agregar Nuevo Usuario</h5>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de Usuario</label>
+                                <input type="text" id="newUsername" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ingrese nombre de usuario">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                                <input type="password" id="newPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ingrese contraseña">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña</label>
+                                <input type="password" id="confirmPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Confirme la contraseña">
+                            </div>
+                            
+                            <div>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="isAdmin" class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">Usuario Administrador</span>
+                                </label>
+                            </div>
+                            
+                            <div class="pt-2">
+                                <button id="addUserBtn" class="w-full py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700">
+                                    <i class="ri-user-add-line mr-2"></i>Agregar Usuario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Información de Usuarios -->
+                    <div class="text-sm text-gray-600 bg-blue-50 p-4 rounded-lg">
+                        <p class="font-medium mb-2">Información:</p>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>Los usuarios Administradores tienen acceso completo al panel</li>
+                            <li>Los usuarios Normales solo pueden ver el panel (próximamente)</li>
+                            <li>El usuario por defecto "usuario" no puede ser eliminado</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Ajustes Generales -->
+            <div id="settingsTab" class="tab-content">
+                <div class="mb-8">
+                    <h4 class="font-bold text-lg mb-4 text-gray-800">Ajustes Generales</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Color Primario</label>
+                            <input type="color" id="primaryColor" value="#003366" class="w-full h-10 rounded-md border border-gray-300">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Imagen de Fondo Hero</label>
+                            <input type="text" id="heroImage" placeholder="URL de la imagen" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <p class="text-xs text-gray-500 mt-1">Ejemplo: https://images.unsplash.com/photo-...jpg</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tiempo de sesión (minutos)</label>
+                            <input type="number" id="sessionTime" value="30" min="5" max="240" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button id="saveChanges" class="flex-1 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700">
+                                Guardar Cambios
+                            </button>
+                            <button id="resetChanges" class="flex-1 py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700">
+                                Reiniciar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Exportar/Importar -->
+                <div class="mb-8">
+                    <h4 class="font-bold text-lg mb-4 text-gray-800">Backup</h4>
+                    <div class="space-y-3">
+                        <button id="exportContent" class="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700">
+                            <i class="ri-download-line mr-2"></i>Exportar Contenido
+                        </button>
+                        <button id="importContent" class="w-full py-2 px-4 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
+                            <i class="ri-upload-line mr-2"></i>Importar Contenido
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Información del Sistema -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h4 class="font-bold text-lg mb-4 text-gray-800">Información del Sistema</h4>
+                    <div class="text-sm text-gray-600 space-y-2">
+                        <div class="flex justify-between">
+                            <span>Versión:</span>
+                            <span class="font-medium">1.2.0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Usuarios Registrados:</span>
+                            <span id="totalUsers" class="font-medium">1</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Última Actualización:</span>
+                            <span id="lastUpdate" class="font-medium">Hoy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botón de Acceso Admin -->
+    <button id="adminAccessBtn" class="fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 z-50">
+        <i class="ri-settings-3-line text-xl"></i>
+    </button>
+
+    <!-- Modal de Login - SIN CREDENCIALES VISIBLES -->
+    <div id="loginModal" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-[10000] flex items-center justify-center hidden">
+        <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-sm">
+            <h3 class="text-2xl font-bold text-center mb-6 text-gray-800">Acceso Administrador</h3>
+            <p id="loginError" class="text-red-600 text-center mb-4 hidden">Usuario o contraseña incorrectos</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="usernameInput" class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
+                    <input type="text" id="usernameInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ingrese su usuario">
+                </div>
+                
+                <div>
+                    <label for="passwordInput" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                    <input type="password" id="passwordInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ingrese su contraseña">
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button id="loginBtn" class="flex-1 py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Ingresar
+                    </button>
+                    <button id="closeLogin" class="flex-1 py-2 px-4 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Confirmar Eliminación de Usuario -->
+    <div id="deleteUserModal" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-[10001] flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-2xl w-full max-w-sm">
+            <h3 class="text-xl font-bold text-center mb-4 text-gray-800">Confirmar Eliminación</h3>
+            <p id="deleteUserMessage" class="text-gray-600 text-center mb-6">¿Estás seguro de que quieres eliminar este usuario?</p>
+            
+            <div class="flex space-x-3">
+                <button id="confirmDeleteUser" class="flex-1 py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700">
+                    Eliminar
+                </button>
+                <button id="cancelDeleteUser" class="flex-1 py-2 px-4 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header / Barra de Navegación -->
+    <header class="sticky top-0 z-50 bg-white header-shadow transition-all duration-300 editable" data-section="header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <!-- Logo -->
+            <div class="flex items-center editable" data-type="logo">
+                <div class="w-12 h-12 rounded-full corporate-gradient flex items-center justify-center mr-3">
+                    <span class="text-white font-bold text-lg editable" data-type="logo-text">N2K</span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800 editable" data-type="company-name">NASA 2000</h1>
+                    <p class="text-xs text-gray-600 editable" data-type="company-tagline">Instrumentación & Automatización Industrial</p>
+                </div>
+            </div>
+            
+            <!-- Navegación -->
+            <nav class="hidden md:flex space-x-8 editable" data-type="navigation">
+                <a href="#inicio" class="text-sm font-medium text-gray-700 hover:text-blue-600 transition duration-200 editable" data-type="nav-link">INICIO</a>
+                <a href="#nosotros" class="text-sm font-medium text-gray-700 hover:text-blue-600 transition duration-200 editable" data-type="nav-link">NOSOTROS</a>
+                <a href="#servicios" class="text-sm font-medium text-gray-700 hover:text-blue-600 transition duration-200 editable" data-type="nav-link">SERVICIOS</a>
+                <a href="#productos" class="text-sm font-medium text-gray-700 hover:text-blue-600 transition duration-200 editable" data-type="nav-link">PRODUCTOS</a>
+                <a href="#clientes" class="text-sm font-medium text-gray-700 hover:text-blue-600 transition duration-200 editable" data-type="nav-link">CLIENTES</a>
+                <a href="#contacto" class="text-sm font-medium text-gray-700 hover:text-blue-600 transition duration-200 editable" data-type="nav-link">CONTACTO</a>
+            </nav>
+            
+            <button class="md:hidden text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sección Hero (Principal) -->
+    <section id="inicio" class="relative bg-gray-900 text-white editable" data-section="hero">
+        <div class="absolute inset-0 overflow-hidden">
+            <img id="heroBackgroundImage" src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
+                 alt="Instalaciones industriales" class="w-full h-full object-cover opacity-40">
+        </div>
+        <div class="relative section-padding">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6 editable" data-type="hero-title">Soluciones Integrales en Automatización Industrial</h1>
+                    <p class="text-xl mb-8 text-gray-300 editable" data-type="hero-subtitle">Más de 20 años de experiencia en instrumentación, control y mantenimiento industrial en Monterrey y todo México.</p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#contacto" class="btn-primary text-white font-semibold py-3 px-8 rounded-lg text-center editable" data-type="cta-button">SOLICITAR COTIZACIÓN</a>
+                        <a href="#servicios" class="bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-lg text-center hover:bg-white hover:text-blue-800 transition duration-300 editable" data-type="secondary-button">CONOCER SERVICIOS</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección Nosotros -->
+    <section id="nosotros" class="section-padding bg-white editable" data-section="nosotros">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold mb-6 text-gray-800 editable" data-type="section-title">NASA 2000: Líder en Automatización Industrial</h2>
+                    <p class="text-lg mb-6 text-gray-600 editable" data-type="section-content">Con sede en Apodaca, Nuevo León, NASA 2000 es una empresa mexicana especializada en instrumentación, automatización y control de procesos industriales.</p>
+                    <p class="text-lg mb-6 text-gray-600 editable" data-type="section-content">Nuestra experiencia de más de dos décadas nos ha permitido desarrollar soluciones integrales para diversos sectores industriales, garantizando eficiencia, seguridad y productividad en cada proyecto.</p>
+                    <div class="grid grid-cols-2 gap-6 mt-8">
+                        <div class="editable" data-type="value-card">
+                            <h3 class="text-xl font-semibold text-blue-700 mb-2 editable" data-type="value-title">Misión</h3>
+                            <p class="text-gray-600 editable" data-type="value-content">Proveer soluciones tecnológicas de vanguardia en instrumentación y automatización que optimicen los procesos industriales de nuestros clientes.</p>
+                        </div>
+                        <div class="editable" data-type="value-card">
+                            <h3 class="text-xl font-semibold text-blue-700 mb-2 editable" data-type="value-title">Visión</h3>
+                            <p class="text-gray-600 editable" data-type="value-content">Ser el socio estratégico preferido en México para la implementación de sistemas de control y automatización industrial.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="bg-blue-50 p-8 rounded-xl">
+                        <h3 class="text-2xl font-bold mb-6 text-gray-800 editable" data-type="subsection-title">Nuestros Valores</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start editable" data-type="value-item">
+                                <div class="bg-blue-100 p-2 rounded-full mr-4">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 editable" data-type="value-item-title">Calidad</h4>
+                                    <p class="text-gray-600 editable" data-type="value-item-content">Garantizamos productos y servicios de la más alta calidad.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start editable" data-type="value-item">
+                                <div class="bg-blue-100 p-2 rounded-full mr-4">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 editable" data-type="value-item-title">Innovación</h4>
+                                    <p class="text-gray-600 editable" data-type="value-item-content">Implementamos las tecnologías más avanzadas del mercado.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start editable" data-type="value-item">
+                                <div class="bg-blue-100 p-2 rounded-full mr-4">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 editable" data-type="value-item-title">Compromiso</h4>
+                                    <p class="text-gray-600 editable" data-type="value-item-content">Nos comprometemos con el éxito de cada proyecto.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start editable" data-type="value-item">
+                                <div class="bg-blue-100 p-2 rounded-full mr-4">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 editable" data-type="value-item-title">Servicio</h4>
+                                    <p class="text-gray-600 editable" data-type="value-item-content">Ofrecemos soporte técnico especializado 24/7.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Servicios -->
+    <section id="servicios" class="section-padding bg-gray-50 editable" data-section="servicios">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold mb-4 text-gray-800 editable" data-type="section-title">Nuestros Servicios</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto editable" data-type="section-subtitle">Ofrecemos soluciones integrales para optimizar sus procesos industriales con tecnología de vanguardia.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Servicio 1 -->
+                <div class="bg-white rounded-xl p-6 card-hover border border-gray-200 editable" data-type="service-card">
+                    <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800 editable" data-type="service-title">Ingeniería y Diseño</h3>
+                    <p class="text-gray-600 mb-4 editable" data-type="service-description">Desarrollo de proyectos llave en mano, desde la conceptualización hasta la puesta en marcha, garantizando la eficiencia operativa.</p>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li class="flex items-start editable" data-type="service-feature">
+                            <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="editable" data-type="feature-text">Diseño de sistemas de control</span>
+                        </li>
+                        <li class="flex items-start editable" data-type="service-feature">
+                            <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="editable" data-type="feature-text">Automatización de procesos</span>
+                        </li>
+                        <li class="flex items-start editable" data-type="service-feature">
+                            <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="editable" data-type="feature-text">Optimización de sistemas existentes</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Servicio 2 -->
+                <div class="bg-white rounded-xl p-6 card-hover border border-gray-200 editable" data-type="service-card">
+                    <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800 editable" data-type="service-title">Mantenimiento Industrial</h3>
+                    <p class="text-gray-600 mb-4 editable" data-type="service-description">Servicio 24/7 para sistemas críticos. Maximizamos el tiempo de actividad y minimizamos los fallos imprevistos.</p>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li class="flex items-start editable" data-type="service-feature">
+                            <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="editable" data-type="feature-text">Mantenimiento preventivo y predictivo</span>
+                        </li>
+                        <li class="flex items-start editable" data-type="service-feature">
+                            <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="editable" data-type="feature-text">Reparación de equipos especializados</span>
+                        </li>
+                        <li class="flex items-start editable" data-type="service-feature">
+                            <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="editable" data-type="feature-text">Soporte técnico especializado</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Servicio 3 -->
+                <div class="bg-white rounded-xl p-6 card-hover border border-gray-200 editable" data-type="service-card">
+                    <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800 editable" data-type="service-title">Integración SCADA/HMI</h3>
+                    <p class="text-gray-600 mb-4 editable" data-type="service-description">Conexión total entre sus equipos y plataformas de visualización para un control centralizado y toma de decisiones en tiempo real.</p>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li class="flex items-start editable" data-type="service-feature">
+                            <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="editable" data-type="feature-text">Desarrollo de interfaces HMI</span>
+                        </li>
+                        <li class="flex items-start editable" data-type="service-feature">
+                            <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="editable" data-type="feature-text">Implementación de sistemas SCADA</span>
+                        </li>
+                        <li class="flex items-start editable" data-type="service-feature">
+                            <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span class="editable" data-type="feature-text">Monitoreo y control remoto</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Productos -->
+    <section id="productos" class="section-padding bg-white editable" data-section="productos">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold mb-4 text-gray-800 editable" data-type="section-title">Nuestros Productos</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto editable" data-type="section-subtitle">Distribuimos equipos de las mejores marcas para instrumentación y control industrial.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Producto 1 -->
+                <div class="bg-gray-50 rounded-xl p-6 text-center card-hover editable" data-type="product-card">
+                    <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2 text-gray-800 editable" data-type="product-title">Instrumentación</h3>
+                    <p class="text-gray-600 text-sm editable" data-type="product-description">Sensores, transmisores y analizadores para medición precisa de variables de proceso.</p>
+                </div>
+
+                <!-- Producto 2 -->
+                <div class="bg-gray-50 rounded-xl p-6 text-center card-hover editable" data-type="product-card">
+                    <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2 text-gray-800 editable" data-type="product-title">Válvulas</h3>
+                    <p class="text-gray-600 text-sm editable" data-type="product-description">Válvulas manuales, on-off, modulantes, criogénicas y de seguridad para todo tipo de aplicaciones.</p>
+                </div>
+
+                <!-- Producto 3 -->
+                <div class="bg-gray-50 rounded-xl p-6 text-center card-hover editable" data-type="product-card">
+                    <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2 text-gray-800 editable" data-type="product-title">Control</h3>
+                    <p class="text-gray-600 text-sm editable" data-type="product-description">Sistemas de control, PLCs, actuadores y equipos para automatización de procesos.</p>
+                </div>
+
+                <!-- Producto 4 -->
+                <div class="bg-gray-50 rounded-xl p-6 text-center card-hover editable" data-type="product-card">
+                    <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2 text-gray-800 editable" data-type="product-title">Seguridad</h3>
+                    <p class="text-gray-600 text-sm editable" data-type="product-description">Equipos y sistemas de seguridad industrial para proteger personas y procesos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Clientes -->
+    <section id="clientes" class="section-padding bg-gray-50 editable" data-section="clientes">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold mb-4 text-gray-800 editable" data-type="section-title">Nuestros Clientes</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto editable" data-type="section-subtitle">Trabajamos con empresas líderes en diversos sectores industriales.</p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
+                <!-- Cliente 1 -->
+                <div class="bg-white p-6 rounded-xl flex items-center justify-center h-24 editable" data-type="client-logo">
+                    <span class="text-gray-500 font-semibold editable" data-type="client-name">Cliente 1</span>
+                </div>
+                
+                <!-- Cliente 2 -->
+                <div class="bg-white p-6 rounded-xl flex items-center justify-center h-24 editable" data-type="client-logo">
+                    <span class="text-gray-500 font-semibold editable" data-type="client-name">Cliente 2</span>
+                </div>
+                
+                <!-- Cliente 3 -->
+                <div class="bg-white p-6 rounded-xl flex items-center justify-center h-24 editable" data-type="client-logo">
+                    <span class="text-gray-500 font-semibold editable" data-type="client-name">Cliente 3</span>
+                </div>
+                
+                <!-- Cliente 4 -->
+                <div class="bg-white p-6 rounded-xl flex items-center justify-center h-24 editable" data-type="client-logo">
+                    <span class="text-gray-500 font-semibold editable" data-type="client-name">Cliente 4</span>
+                </div>
+            </div>
+            
+            <div class="mt-16 bg-white rounded-xl p-8">
+                <div class="max-w-3xl mx-auto text-center">
+                    <h3 class="text-2xl font-bold mb-6 text-gray-800 editable" data-type="cta-title">¿Listo para optimizar sus procesos industriales?</h3>
+                    <p class="text-lg text-gray-600 mb-8 editable" data-type="cta-subtitle">Contáctenos hoy mismo para una consultoría gratuita y descubra cómo podemos ayudarle a mejorar la eficiencia de su operación.</p>
+                    <a href="#contacto" class="btn-primary text-white font-semibold py-3 px-8 rounded-lg inline-block editable" data-type="cta-button">SOLICITAR ASESORÍA</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / Contacto -->
+    <footer id="contacto" class="bg-gray-900 text-white editable" data-section="contacto">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full corporate-gradient flex items-center justify-center mr-3">
+                            <span class="text-white font-bold editable" data-type="footer-logo">N2K</span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg editable" data-type="footer-company-name">NASA 2000</h3>
+                            <p class="text-xs text-gray-400 editable" data-type="footer-tagline">Instrumentación Industrial</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-4 editable" data-type="footer-description">Líder en soluciones de instrumentación y automatización industrial en México.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-200">
+                            <i class="ri-facebook-fill text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-200">
+                            <i class="ri-twitter-fill text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-200">
+                            <i class="ri-linkedin-fill text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4 editable" data-type="footer-section-title">Contacto</h4>
+                    <div class="space-y-2 text-gray-400">
+                        <p class="flex items-start editable" data-type="contact-info">
+                            <i class="ri-map-pin-line mr-2 mt-0.5 flex-shrink-0"></i>
+                            <span class="editable" data-type="address">Regio Avenida, Regio Parque Industrial, Apodaca, N.L. México</span>
+                        </p>
+                        <p class="flex items-center editable" data-type="contact-info">
+                            <i class="ri-phone-line mr-2 flex-shrink-0"></i>
+                            <span class="editable" data-type="phone">81 1334 0900</span>
+                        </p>
+                        <p class="flex items-center editable" data-type="contact-info">
+                            <i class="ri-mail-line mr-2 flex-shrink-0"></i>
+                            <span class="editable" data-type="email">info@nasa2000.com.mx</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4 editable" data-type="footer-section-title">Servicios</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#servicios" class="hover:text-white transition duration-200 editable" data-type="footer-link">Ingeniería y Diseño</a></li>
+                        <li><a href="#servicios" class="hover:text-white transition duration-200 editable" data-type="footer-link">Mantenimiento Industrial</a></li>
+                        <li><a href="#servicios" class="hover:text-white transition duration-200 editable" data-type="footer-link">Integración SCADA/HMI</a></li>
+                        <li><a href="#servicios" class="hover:text-white transition duration-200 editable" data-type="footer-link">Automatización de Procesos</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4 editable" data-type="footer-section-title">Productos</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#productos" class="hover:text-white transition duration-200 editable" data-type="footer-link">Instrumentación</a></li>
+                        <li><a href="#productos" class="hover:text-white transition duration-200 editable" data-type="footer-link">Válvulas</a></li>
+                        <li><a href="#productos" class="hover:text-white transition duration-200 editable" data-type="footer-link">Control</a></li>
+                        <li><a href="#productos" class="hover:text-white transition duration-200 editable" data-type="footer-link">Seguridad</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p class="editable" data-type="copyright">© 2023 NASA 2000. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sistema de Gestión de Usuarios
+        const USER_SYSTEM = {
+            users: [
+                {
+                    id: 1,
+                    username: 'usuario',
+                    password: 'N4542000',
+                    isAdmin: true,
+                    createdAt: new Date().toISOString()
+                }
+            ],
+            currentSession: null,
+            sessionTimeout: null
+        };
+        
+        // Estado de la aplicación
+        let isAdminMode = false;
+        let currentElement = null;
+        let originalContent = null;
+        let userToDelete = null;
+        
+        // Elementos del DOM
+        const adminPanel = document.getElementById('adminPanel');
+        const adminOverlay = document.getElementById('adminOverlay');
+        const adminAccessBtn = document.getElementById('adminAccessBtn');
+        const closeAdminPanel = document.getElementById('closeAdminPanel');
+        const loginModal = document.getElementById('loginModal');
+        const loginBtn = document.getElementById('loginBtn');
+        const closeLogin = document.getElementById('closeLogin');
+        const usernameInput = document.getElementById('usernameInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginError = document.getElementById('loginError');
+        
+        // Tabs
+        const tabContent = document.getElementById('tabContent');
+        const tabUsers = document.getElementById('tabUsers');
+        const tabSettings = document.getElementById('tabSettings');
+        const contentTab = document.getElementById('contentTab');
+        const usersTab = document.getElementById('usersTab');
+        const settingsTab = document.getElementById('settingsTab');
+        
+        // Controles de edición
+        const editText = document.getElementById('editText');
+        const editColor = document.getElementById('editColor');
+        const editFontSize = document.getElementById('editFontSize');
+        const btnBold = document.getElementById('btnBold');
+        const btnItalic = document.getElementById('btnItalic');
+        const btnUnderline = document.getElementById('btnUnderline');
+        const applyChanges = document.getElementById('applyChanges');
+        const primaryColor = document.getElementById('primaryColor');
+        const heroImage = document.getElementById('heroImage');
+        const saveChanges = document.getElementById('saveChanges');
+        const resetChanges = document.getElementById('resetChanges');
+        const exportContent = document.getElementById('exportContent');
+        const importContent = document.getElementById('importContent');
+        
+        // Gestión de usuarios
+        const usersList = document.getElementById('usersList');
+        const newUsername = document.getElementById('newUsername');
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const isAdmin = document.getElementById('isAdmin');
+        const addUserBtn = document.getElementById('addUserBtn');
+        const deleteUserModal = document.getElementById('deleteUserModal');
+        const deleteUserMessage = document.getElementById('deleteUserMessage');
+        const confirmDeleteUser = document.getElementById('confirmDeleteUser');
+        const cancelDeleteUser = document.getElementById('cancelDeleteUser');
+        const totalUsers = document.getElementById('totalUsers');
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            // Guardar contenido original
+            originalContent = document.body.innerHTML;
+            
+            // Cargar usuarios desde localStorage
+            loadUsersFromStorage();
+            
+            // Actualizar contador de usuarios
+            updateUserCount();
+            
+            // Configurar event listeners
+            setupEventListeners();
+            
+            // Configurar sistema de tabs
+            setupTabs();
+            
+            // Cargar lista de usuarios
+            loadUsersList();
+        });
+        
+        function loadUsersFromStorage() {
+            const savedUsers = localStorage.getItem('nasa2000_users');
+            if (savedUsers) {
+                USER_SYSTEM.users = JSON.parse(savedUsers);
+            }
+        }
+        
+        function saveUsersToStorage() {
+            localStorage.setItem('nasa2000_users', JSON.stringify(USER_SYSTEM.users));
+        }
+        
+        function setupEventListeners() {
+            // Botón de acceso admin
+            adminAccessBtn.addEventListener('click', showLoginModal);
+            
+            // Cerrar panel admin
+            closeAdminPanel.addEventListener('click', closeAdminPanelHandler);
+            
+            // Overlay para cerrar panel
+            adminOverlay.addEventListener('click', closeAdminPanelHandler);
+            
+            // Login
+            loginBtn.addEventListener('click', handleLogin);
+            closeLogin.addEventListener('click', hideLoginModal);
+            
+            // Controles de edición
+            applyChanges.addEventListener('click', applyTextChanges);
+            btnBold.addEventListener('click', () => toggleStyle('bold'));
+            btnItalic.addEventListener('click', () => toggleStyle('italic'));
+            btnUnderline.addEventListener('click', () => toggleStyle('underline'));
+            
+            // Ajustes generales
+            saveChanges.addEventListener('click', saveAllChanges);
+            resetChanges.addEventListener('click', resetAllChanges);
+            exportContent.addEventListener('click', exportPageContent);
+            importContent.addEventListener('click', importPageContent);
+            
+            // Gestión de usuarios
+            addUserBtn.addEventListener('click', addNewUser);
+            confirmDeleteUser.addEventListener('click', deleteUser);
+            cancelDeleteUser.addEventListener('click', () => {
+                deleteUserModal.classList.add('hidden');
+            });
+            
+            // Gestión de secciones
+            document.querySelectorAll('.edit-section').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    scrollToSection(section);
+                });
+            });
+            
+            // Permitir enter para login
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+            
+            // Enter para agregar usuario
+            confirmPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addNewUser();
+                }
+            });
+        }
+        
+        function setupTabs() {
+            // Configurar eventos para cambiar tabs
+            tabContent.addEventListener('click', () => switchTab('content'));
+            tabUsers.addEventListener('click', () => switchTab('users'));
+            tabSettings.addEventListener('click', () => switchTab('settings'));
+        }
+        
+        function switchTab(tabName) {
+            // Remover clase active de todos los botones
+            tabContent.classList.remove('active');
+            tabUsers.classList.remove('active');
+            tabSettings.classList.remove('active');
+            
+            // Ocultar todos los contenidos
+            contentTab.classList.remove('active');
+            usersTab.classList.remove('active');
+            settingsTab.classList.remove('active');
+            
+            // Activar tab seleccionado
+            if (tabName === 'content') {
+                tabContent.classList.add('active');
+                contentTab.classList.add('active');
+            } else if (tabName === 'users') {
+                tabUsers.classList.add('active');
+                usersTab.classList.add('active');
+            } else if (tabName === 'settings') {
+                tabSettings.classList.add('active');
+                settingsTab.classList.add('active');
+            }
+        }
+        
+        function loadUsersList() {
+            usersList.innerHTML = '';
+            
+            USER_SYSTEM.users.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="flex items-center">
+                                <span class="font-medium text-gray-800">${user.username}</span>
+                                ${user.isAdmin ? 
+                                    '<span class="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">Administrador</span>' : 
+                                    '<span class="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">Normal</span>'
+                                }
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                Creado: ${new Date(user.createdAt).toLocaleDateString()}
+                            </div>
+                        </div>
+                        ${user.username !== 'usuario' ? 
+                            `<button class="delete-user-btn text-red-600 hover:text-red-800" data-user-id="${user.id}">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>` : 
+                            '<span class="text-gray-400 text-sm">Predeterminado</span>'
+                        }
+                    </div>
+                `;
+                
+                usersList.appendChild(userItem);
+            });
+            
+            // Agregar event listeners a los botones de eliminar
+            document.querySelectorAll('.delete-user-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = parseInt(this.dataset.userId);
+                    showDeleteUserModal(userId);
+                });
+            });
+            
+            // Actualizar contador
+            updateUserCount();
+        }
+        
+        function showDeleteUserModal(userId) {
+            const user = USER_SYSTEM.users.find(u => u.id === userId);
+            if (user) {
+                userToDelete = userId;
+                deleteUserMessage.textContent = `¿Estás seguro de que quieres eliminar al usuario "${user.username}"? Esta acción no se puede deshacer.`;
+                deleteUserModal.classList.remove('hidden');
+            }
+        }
+        
+        function deleteUser() {
+            if (userToDelete) {
+                USER_SYSTEM.users = USER_SYSTEM.users.filter(user => user.id !== userToDelete);
+                saveUsersToStorage();
+                loadUsersList();
+                deleteUserModal.classList.add('hidden');
+                userToDelete = null;
+                showNotification('Usuario eliminado correctamente', 'success');
+            }
+        }
+        
+        function addNewUser() {
+            const username = newUsername.value.trim();
+            const password = newPassword.value.trim();
+            const confirmPass = confirmPassword.value.trim();
+            const admin = isAdmin.checked;
+            
+            // Validaciones
+            if (!username || !password || !confirmPass) {
+                showNotification('Todos los campos son obligatorios', 'error');
+                return;
+            }
+            
+            if (password !== confirmPass) {
+                showNotification('Las contraseñas no coinciden', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('La contraseña debe tener al menos 6 caracteres', 'error');
+                return;
+            }
+            
+            // Verificar si el usuario ya existe
+            if (USER_SYSTEM.users.some(user => user.username === username)) {
+                showNotification('El nombre de usuario ya existe', 'error');
+                return;
+            }
+            
+            // Crear nuevo usuario
+            const newUser = {
+                id: Date.now(),
+                username: username,
+                password: password,
+                isAdmin: admin,
+                createdAt: new Date().toISOString()
+            };
+            
+            USER_SYSTEM.users.push(newUser);
+            saveUsersToStorage();
+            loadUsersList();
+            
+            // Limpiar formulario
+            newUsername.value = '';
+            newPassword.value = '';
+            confirmPassword.value = '';
+            isAdmin.checked = false;
+            
+            showNotification(`Usuario "${username}" agregado correctamente`, 'success');
+        }
+        
+        function updateUserCount() {
+            totalUsers.textContent = USER_SYSTEM.users.length;
+        }
+        
+        function showLoginModal() {
+            loginModal.classList.remove('hidden');
+            usernameInput.value = '';
+            passwordInput.value = '';
+            loginError.classList.add('hidden');
+            usernameInput.focus();
+        }
+        
+        function hideLoginModal() {
+            loginModal.classList.add('hidden');
+        }
+        
+        function handleLogin() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            // Buscar usuario
+            const user = USER_SYSTEM.users.find(u => 
+                u.username === username && u.password === password
+            );
+            
+            if (user) {
+                if (user.isAdmin) {
+                    USER_SYSTEM.currentSession = user;
+                    isAdminMode = true;
+                    hideLoginModal();
+                    enableAdminMode();
+                    startSessionTimer();
+                    showNotification(`Bienvenido, ${user.username}`, 'success');
+                } else {
+                    showNotification('Este usuario no tiene permisos de administrador', 'error');
+                }
+            } else {
+                loginError.classList.remove('hidden');
+                passwordInput.focus();
+            }
+        }
+        
+        function startSessionTimer() {
+            // Limpiar timer anterior
+            if (USER_SYSTEM.sessionTimeout) {
+                clearTimeout(USER_SYSTEM.sessionTimeout);
+            }
+            
+            // Configurar nuevo timer (30 minutos por defecto)
+            const sessionTime = parseInt(document.getElementById('sessionTime').value) || 30;
+            const timeoutMinutes = sessionTime * 60 * 1000;
+            
+            USER_SYSTEM.sessionTimeout = setTimeout(() => {
+                showNotification('Sesión expirada por inactividad', 'warning');
+                disableAdminMode();
+            }, timeoutMinutes);
+        }
+        
+        function resetSessionTimer() {
+            if (isAdminMode) {
+                startSessionTimer();
+            }
+        }
+        
+        function enableAdminMode() {
+            // Mostrar elementos de administración
+            adminAccessBtn.innerHTML = '<i class="ri-settings-3-fill text-xl"></i>';
+            adminAccessBtn.classList.add('bg-green-600');
+            document.getElementById('adminUserDisplay').textContent = USER_SYSTEM.currentSession.username;
+            
+            // Activar modo edición en elementos editables
+            document.querySelectorAll('.editable').forEach(element => {
+                element.classList.add('cursor-pointer');
+                element.addEventListener('click', handleElementClick);
+            });
+            
+            // Mostrar panel admin
+            adminPanel.classList.add('open');
+            adminOverlay.classList.add('show');
+            
+            // Resetear timer por interacción
+            document.addEventListener('click', resetSessionTimer);
+            document.addEventListener('keypress', resetSessionTimer);
+        }
+        
+        function disableAdminMode() {
+            isAdminMode = false;
+            USER_SYSTEM.currentSession = null;
+            
+            // Limpiar timer
+            if (USER_SYSTEM.sessionTimeout) {
+                clearTimeout(USER_SYSTEM.sessionTimeout);
+            }
+            
+            // Remover listeners de reset de sesión
+            document.removeEventListener('click', resetSessionTimer);
+            document.removeEventListener('keypress', resetSessionTimer);
+            
+            // Restaurar botón admin
+            adminAccessBtn.innerHTML = '<i class="ri-settings-3-line text-xl"></i>';
+            adminAccessBtn.classList.remove('bg-green-600');
+            
+            // Desactivar modo edición
+            document.querySelectorAll('.editable').forEach(element => {
+                element.classList.remove('cursor-pointer', 'editable-active');
+                element.removeEventListener('click', handleElementClick);
+            });
+            
+            // Ocultar panel admin
+            closeAdminPanelHandler();
+        }
+        
+        function closeAdminPanelHandler() {
+            adminPanel.classList.remove('open');
+            adminOverlay.classList.remove('show');
+            disableAdminMode();
+        }
+        
+        function handleElementClick(e) {
+            e.stopPropagation();
+            
+            if (!isAdminMode) return;
+            
+            // Remover selección anterior
+            if (currentElement) {
+                currentElement.classList.remove('editable-active');
+            }
+            
+            // Establecer nuevo elemento seleccionado
+            currentElement = e.currentTarget;
+            currentElement.classList.add('editable-active');
+            
+            // Cambiar a tab de contenido
+            switchTab('content');
+            
+            // Obtener el texto seleccionado
+            const selection = window.getSelection();
+            let selectedText = '';
+            
+            if (selection.toString().trim() !== '') {
+                selectedText = selection.toString();
+            } else {
+                selectedText = currentElement.textContent || currentElement.value || '';
+            }
+            
+            // Actualizar controles de edición
+            editText.value = selectedText;
+            
+            // Obtener estilo actual
+            const computedStyle = window.getComputedStyle(currentElement);
+            editColor.value = rgbToHex(computedStyle.color);
+            
+            // Determinar tamaño de fuente aproximado
+            const fontSize = parseInt(computedStyle.fontSize);
+            if (fontSize >= 24) editFontSize.value = 'text-2xl';
+            else if (fontSize >= 20) editFontSize.value = 'text-xl';
+            else if (fontSize >= 18) editFontSize.value = 'text-lg';
+            else if (fontSize <= 14) editFontSize.value = 'text-sm';
+            else editFontSize.value = 'text-base';
+            
+            // Scroll suave al panel de edición si es necesario
+            adminPanel.scrollTop = 0;
+        }
+        
+        function applyTextChanges() {
+            if (!currentElement) {
+                showNotification('Selecciona un elemento para editar', 'error');
+                return;
+            }
+            
+            const newText = editText.value;
+            const newColor = editColor.value;
+            const newFontSize = editFontSize.value;
+            
+            // Aplicar cambios al elemento
+            if (currentElement.tagName === 'INPUT' || currentElement.tagName === 'TEXTAREA') {
+                currentElement.value = newText;
+            } else {
+                currentElement.textContent = newText;
+            }
+            
+            // Aplicar estilos
+            currentElement.style.color = newColor;
+            
+            // Remover clases de tamaño anteriores
+            const sizeClasses = ['text-sm', 'text-base', 'text-lg', 'text-xl', 'text-2xl'];
+            sizeClasses.forEach(cls => currentElement.classList.remove(cls));
+            
+            // Agregar nueva clase de tamaño
+            currentElement.classList.add(newFontSize);
+            
+            showNotification('Cambios aplicados correctamente', 'success');
+        }
+        
+        function toggleStyle(styleType) {
+            if (!currentElement) {
+                showNotification('Selecciona un elemento primero', 'error');
+                return;
+            }
+            
+            switch(styleType) {
+                case 'bold':
+                    currentElement.style.fontWeight = currentElement.style.fontWeight === 'bold' ? 'normal' : 'bold';
+                    break;
+                case 'italic':
+                    currentElement.style.fontStyle = currentElement.style.fontStyle === 'italic' ? 'normal' : 'italic';
+                    break;
+                case 'underline':
+                    currentElement.style.textDecoration = currentElement.style.textDecoration === 'underline' ? 'none' : 'underline';
+                    break;
+            }
+            
+            // Actualizar texto en el panel
+            editText.value = currentElement.textContent || currentElement.value || '';
+        }
+        
+        function saveAllChanges() {
+            // Guardar configuración
+            const settings = {
+                primaryColor: primaryColor.value,
+                heroImage: heroImage.value,
+                sessionTime: document.getElementById('sessionTime').value
+            };
+            
+            localStorage.setItem('nasa2000_settings', JSON.stringify(settings));
+            
+            showNotification('Configuración guardada correctamente', 'success');
+        }
+        
+        function resetAllChanges() {
+            if (confirm('¿Estás seguro de que quieres reiniciar todos los cambios?')) {
+                document.body.innerHTML = originalContent;
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
+            }
+        }
+        
+        function exportPageContent() {
+            const pageContent = document.body.innerHTML;
+            const blob = new Blob([pageContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'nasa2000_website_backup.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Contenido exportado correctamente', 'success');
+        }
+        
+        function importPageContent() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html,.htm';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    const content = event.target.result;
+                    document.body.innerHTML = content;
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+        
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+                showNotification(`Navegando a sección: ${sectionId}`, 'info');
+            }
+        }
+        
+        function rgbToHex(rgb) {
+            // Convertir rgb a hex
+            if (rgb.startsWith('#')) return rgb;
+            
+            const result = rgb.match(/\d+/g);
+            if (!result) return '#000000';
+            
+            const r = parseInt(result[0]);
+            const g = parseInt(result[1]);
+            const b = parseInt(result[2]);
+            
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Crear notificación
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-[10001] px-4 py-3 rounded-lg shadow-lg text-white font-medium ${
+                type === 'success' ? 'bg-green-600' : 
+                type === 'error' ? 'bg-red-600' : 
+                type === 'warning' ? 'bg-yellow-600' :
+                'bg-blue-600'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Remover después de 3 segundos
+            setTimeout(() => {
+                notification.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+        
+        // Smooth scrolling para enlaces internos
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Efecto de sombra en el header al hacer scroll
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            if (window.scrollY > 10) {
+                header.classList.add('shadow-md');
+            } else {
+                header.classList.remove('shadow-md');
+            }
+        });
+    </script>
+</body>
+</html>
