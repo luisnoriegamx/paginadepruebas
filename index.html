@@ -3,18 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LUMOS ELITE | Secure Access</title>
+    <title>LUMOS ELITE | Management Suite</title>
     
+    <!-- PWA Settings -->
+    <meta name="theme-color" content="#0A0A0A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/144/fingerprint.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href='data:application/manifest+json;base64,eyJuYW1lIjoiTHVtb3MgRWxpdGUgU3RvcmUiLCJzaG9ydF9uYW1lIjoiTHVtb3NFbGl0ZSIs"start_url":".","display":"standalone","background_color":"#050505","theme_color":"#C5A059","orientation":"portrait","icons":[{"src":"https://img.icons8.com/color/512/fingerprint.png","sizes":"512x512","type":"image/png"}]}'>
+
     <!-- React Core -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Estilos y Utilidades -->
+    <!-- Librerías Externas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Estilos -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;500;600&family=Space+Mono&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -26,53 +38,43 @@
                             dark: '#0A0A0A',
                             surface: '#121212',
                             gold: '#C5A059',
-                            goldLight: '#E5C585',
                             muted: '#525252',
                             danger: '#991B1B',
-                            success: '#10B981'
+                            success: '#10B981',
+                            accent: '#3b82f6'
                         }
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        serif: ['Cinzel', 'serif']
+                        serif: ['Cinzel', 'serif'],
+                        mono: ['Space Mono', 'monospace']
                     },
                     animation: {
                         'fade-in': 'fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-                        'slide-in': 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
                     },
                     keyframes: {
-                        fadeIn: { '0%': { opacity: 0, transform: 'translateY(10px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
-                        slideIn: { '0%': { transform: 'translateX(100%)' }, '100%': { transform: 'translateX(0)' } }
+                        fadeIn: { '0%': { opacity: 0, transform: 'translateY(10px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } }
                     }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #050505; color: #E5E5E5; -webkit-font-smoothing: antialiased; }
-        ::-webkit-scrollbar { width: 6px; }
+        body { background-color: #050505; color: #E5E5E5; overscroll-behavior-y: none; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #0A0A0A; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #C5A059; }
-        .glass-panel {
-            background: rgba(18, 18, 18, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        #loader-overlay {
-            position: fixed; inset: 0; z-index: 9999; background: #050505; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        /* Ocultar input password eye default */
-        input[type="password"]::-ms-reveal,
-        input[type="password"]::-ms-clear { display: none; }
+        .glass-panel { background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        #loader-overlay { position: fixed; inset: 0; z-index: 9999; background: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        input[type="password"]::-ms-reveal, input[type="password"]::-ms-clear { display: none; }
+        .status-badge { @apply px-2 py-1 rounded text-xs font-bold uppercase; }
+        @media (max-width: 768px) { .glass-panel { padding: 1rem; } h1 { font-size: 1.5rem; } td, th { white-space: nowrap; } }
     </style>
 </head>
 <body>
     <div id="loader-overlay">
         <div class="w-16 h-16 border-t-2 border-brand-gold rounded-full animate-spin mb-4"></div>
-        <p class="text-brand-gold text-xs tracking-[0.3em] font-serif animate-pulse">ENCRIPTANDO CONEXIÓN...</p>
+        <p class="text-brand-gold text-xs tracking-[0.3em] font-serif animate-pulse">CARGANDO...</p>
     </div>
 
     <div id="root"></div>
@@ -80,11 +82,11 @@
     <script type="module">
         import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp, orderBy, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.FirebaseDS = {
             initializeApp, deleteApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,
-            getFirestore, collection, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp, orderBy
+            getFirestore, collection, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp, orderBy, runTransaction
         };
         window.dispatchEvent(new Event('firebase-ready'));
     </script>
@@ -92,9 +94,9 @@
     <script type="text/babel">
         const initReactApp = () => {
             document.getElementById('loader-overlay').style.display = 'none';
-            const { initializeApp, deleteApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, getFirestore, collection, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp, orderBy } = window.FirebaseDS;
+            const { initializeApp, deleteApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, getFirestore, collection, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp, orderBy, runTransaction } = window.FirebaseDS;
 
-            // --- CONFIGURACIÓN FIREBASE (Lumos DWS) ---
+            // --- CONFIGURACIÓN FIREBASE ---
             const firebaseConfig = {
                 apiKey: "AIzaSyD-EXCm7GInlVPs35kCO0K4352TwYOe6tc",
                 authDomain: "lumos-dws.firebaseapp.com",
@@ -104,29 +106,25 @@
                 appId: "1:234532434316:web:88f8c799f193e3e18726a9"
             };
             
-            // --- 🛑 CONFIGURACIÓN MAESTRA 🛑 ---
-            const MASTER_KEY = "Admin01"; // <--- CLAVE DEL MASTER 
-            const MASTER_PASS = "Sup2025"; // <--- CONTRASEÑA DEL MASTER
-            const HIDDEN_DOMAIN = "@lumos.private"; // Dominio invisible
-            // ----------------------------------------
+            const MASTER_KEY = "Admin01"; 
+            const MASTER_PASS = "Sup2025"; 
+            const HIDDEN_DOMAIN = "@lumos.private";
 
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
             const db = getFirestore(app);
 
+            // --- UTILS ---
             const Security = {
                 getDeviceId: () => {
                     let id = localStorage.getItem('lumos_elite_id');
-                    if (!id) { 
-                        id = crypto.randomUUID(); 
-                        localStorage.setItem('lumos_elite_id', id); 
-                    }
+                    if (!id) { id = crypto.randomUUID(); localStorage.setItem('lumos_elite_id', id); }
                     return id;
                 },
                 formatMoney: (amount) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount),
                 formatDate: (timestamp) => {
-                    if(!timestamp) return 'Pendiente...';
-                    return new Date(timestamp.seconds * 1000).toLocaleDateString("es-MX", { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' });
+                    if(!timestamp) return '...';
+                    return new Date(timestamp.seconds * 1000).toLocaleDateString("es-MX", { day: 'numeric', month: 'short', year:'numeric', hour: '2-digit', minute:'2-digit' });
                 },
                 cleanUsername: (email) => email ? email.replace(HIDDEN_DOMAIN, '') : ''
             };
@@ -138,274 +136,153 @@
                 </div>
             );
 
-            const LoginScreen = ({ onLogin }) => {
-                const [username, setUsername] = React.useState('');
-                const [pass, setPass] = React.useState('');
-                const [loading, setLoading] = React.useState(false);
-                const [error, setError] = React.useState(null);
-                const currentDeviceId = Security.getDeviceId(); // ID actual del navegador
+            const generatePDF = (order) => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [80, 200] });
+                doc.setFont("courier", "bold"); doc.setFontSize(14); doc.text("LUMOS ELITE", 40, 10, { align: "center" });
+                doc.setFontSize(8); doc.setFont("courier", "normal"); doc.text("COMPROBANTE", 40, 15, { align: "center" });
+                let y = 25; 
+                doc.text(`FOLIO: ${order.folio || 'PENDIENTE'}`, 5, y); y+=5; 
+                doc.text(`FECHA: ${Security.formatDate(order.createdAt)}`, 5, y); y+=5;
+                doc.text(`CLIENTE: ${order.username}`, 5, y); y+=5;
+                doc.text("--------------------------------", 40, y, { align: "center" }); y+=5;
+                order.items.forEach(i => { 
+                    doc.text(`${i.name.substring(0,18)}`, 5, y); 
+                    doc.text(`${Security.formatMoney(i.price)}`, 75, y, { align: "right" }); y+=5; 
+                });
+                doc.text("--------------------------------", 40, y, { align: "center" }); y+=5;
+                doc.setFont("courier", "bold"); doc.text(`TOTAL: ${Security.formatMoney(order.total)}`, 75, y, { align: "right" });
+                doc.save(`Ticket_${order.folio || 'LMS'}.pdf`);
+            };
 
-                const processLogin = async (userAuth, isNewUser = false) => {
-                    const userRef = doc(db, 'users', userAuth.uid);
-                    const userSnap = await getDoc(userRef);
-                    const inputUser = Security.cleanUsername(userAuth.email);
+            // --- DASHBOARD (RESTAURADO) ---
+            const DashboardAnalytics = () => {
+                const [orders, setOrders] = React.useState([]);
+                const [users, setUsers] = React.useState([]);
+                const chartRef = React.useRef(null);
 
-                    if (!userSnap.exists()) {
-                        // Creación automática SOLO para el MASTER inicial
-                        const initialRole = (inputUser.toUpperCase() === MASTER_KEY.toUpperCase()) ? 'admin' : 'client';
-                        await setDoc(userRef, {
-                            username: inputUser,
-                            email: userAuth.email, 
-                            role: initialRole, 
-                            registeredDeviceId: currentDeviceId,
-                            status: 'active',
-                            createdAt: serverTimestamp()
-                        });
-                        onLogin(userAuth, initialRole);
-                    } else {
-                        const data = userSnap.data();
-                        if (data.status !== 'active') throw new Error("Acceso Revocado.");
-                        
-                        // LÓGICA DE VALIDACIÓN DE DISPOSITIVO MEJORADA
-                        // Si es ADMIN, NO verificamos el dispositivo (Paso Libre)
-                        if (data.role === 'admin') {
-                            // Opcional: Actualizar el último dispositivo usado por el admin solo para registro
-                            await updateDoc(userRef, { lastDeviceId: currentDeviceId });
-                            onLogin(userAuth, 'admin');
-                            return;
+                React.useEffect(() => {
+                    const unsubO = onSnapshot(collection(db, "orders"), s => setOrders(s.docs.map(d => d.data())));
+                    const unsubU = onSnapshot(collection(db, "users"), s => setUsers(s.docs.map(d => d.data())));
+                    return () => { unsubO(); unsubU(); }
+                }, []);
+
+                const totalRev = orders.reduce((acc, o) => acc + (o.total || 0), 0);
+                const avgTicket = orders.length ? totalRev / orders.length : 0;
+
+                React.useEffect(() => {
+                    if(!chartRef.current || !orders.length) return;
+                    const salesByDate = {};
+                    orders.forEach(o => {
+                        if(o.createdAt) {
+                            const d = new Date(o.createdAt.seconds*1000).toLocaleDateString('es-MX', {day:'numeric', month:'short'});
+                            salesByDate[d] = (salesByDate[d]||0) + o.total;
                         }
-
-                        // Si es CLIENTE, aplicamos seguridad estricta
-                        if (data.registeredDeviceId && data.registeredDeviceId !== currentDeviceId) {
-                            await signOut(auth); 
-                            throw new Error(`Dispositivo no autorizado. (ID Esperado: ...${data.registeredDeviceId.slice(-4)}, ID Actual: ...${currentDeviceId.slice(-4)})`);
-                        }
-                        
-                        // Vincular dispositivo si estaba libre
-                        if (!data.registeredDeviceId) await updateDoc(userRef, { registeredDeviceId: currentDeviceId });
-                        
-                        onLogin(userAuth, data.role);
-                    }
-                };
-
-                const handleSubmit = async (e) => {
-                    e.preventDefault();
-                    setLoading(true); setError(null);
+                    });
+                    const labels = Object.keys(salesByDate).slice(-7);
+                    const data = Object.values(salesByDate).slice(-7);
                     
-                    // VALIDACIÓN DE SEGURIDAD LOCAL PARA MASTER
-                    if (username.trim().toUpperCase() === MASTER_KEY.toUpperCase()) {
-                        if (pass !== MASTER_PASS) {
-                            setError("Credenciales Maestras Incorrectas.");
-                            setLoading(false);
-                            return;
-                        }
-                    }
+                    if(window.myChart) window.myChart.destroy();
+                    window.myChart = new Chart(chartRef.current, {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [{ label: 'Ventas', data, borderColor: '#C5A059', backgroundColor: 'rgba(197,160,89,0.1)', fill: true }]
+                        },
+                        options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#333' } } } }
+                    });
+                }, [orders]);
 
-                    const fullEmail = username.trim() + HIDDEN_DOMAIN;
-                    
-                    try {
-                        try {
-                            const cred = await signInWithEmailAndPassword(auth, fullEmail, pass);
-                            await processLogin(cred.user);
-                        } catch (loginErr) {
-                            if (loginErr.code === 'auth/user-not-found' || loginErr.code === 'auth/invalid-credential') {
-                                // Bootstrap Master
-                                if (username.trim().toUpperCase() === MASTER_KEY.toUpperCase()) {
-                                    try {
-                                        const newCred = await createUserWithEmailAndPassword(auth, fullEmail, pass);
-                                        await processLogin(newCred.user, true);
-                                    } catch (createErr) {
-                                        if(createErr.code === 'auth/email-already-in-use') throw new Error("Clave incorrecta.");
-                                        throw createErr;
-                                    }
-                                } else {
-                                    throw new Error("Usuario no registrado. Solicite alta al Master.");
-                                }
-                            } else {
-                                throw loginErr;
-                            }
-                        }
-                    } catch (err) { 
-                        console.error(err);
-                        let msg = err.message;
-                        if (err.code === 'auth/wrong-password') msg = "Clave de acceso incorrecta.";
-                        setError(msg); 
-                        setLoading(false); 
-                    }
-                };
+                const Kpi = ({ title, val, icon, color }) => (
+                    <div className="glass-panel p-4 rounded-xl border-l-4 border-brand-gold relative overflow-hidden">
+                        <div className={`absolute right-2 top-2 p-2 rounded-lg bg-white/5 ${color} text-xl`}><i className={`fas ${icon}`}></i></div>
+                        <p className="text-xs text-gray-400 uppercase tracking-wider">{title}</p>
+                        <h3 className="text-2xl text-white font-serif mt-1">{val}</h3>
+                    </div>
+                );
 
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center">
-                        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm"></div>
-                        <div className="relative z-10 w-full max-w-md p-10 glass-panel rounded-2xl shadow-2xl animate-fade-in border border-white/5">
-                            <div className="text-center mb-10">
-                                <div className="w-16 h-16 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-gold/30">
-                                    <i className="fas fa-shield-alt text-3xl text-brand-gold"></i>
-                                </div>
-                                <h1 className="font-serif text-3xl text-white tracking-wide">LUMOS <span className="text-brand-gold">SECURE</span></h1>
-                                <p className="text-brand-muted text-[10px] uppercase tracking-[0.3em] mt-2">Acceso Encriptado</p>
-                            </div>
-                            
-                            {error && (
-                                <div className="mb-6 p-3 bg-red-900/20 border-l-2 border-red-500 text-red-200 text-xs flex items-center gap-2 animate-pulse">
-                                    <i className="fas fa-exclamation-circle"></i> {error}
-                                </div>
-                            )}
-                            
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="group relative">
-                                    <label className="absolute -top-2 left-2 bg-black px-1 text-[10px] text-brand-gold uppercase tracking-wider">Usuario / Clave</label>
-                                    <input 
-                                        type="text" 
-                                        value={username} onChange={e=>setUsername(e.target.value.toUpperCase())}
-                                        className="w-full bg-transparent border border-white/20 rounded-lg p-4 text-white placeholder-gray-600 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest uppercase transition-colors"
-                                        placeholder="EJ: CLIENTE01" required 
-                                    />
-                                </div>
-                                <div className="group relative">
-                                    <label className="absolute -top-2 left-2 bg-black px-1 text-[10px] text-brand-gold uppercase tracking-wider">Clave de Acceso</label>
-                                    <input 
-                                        type="password" 
-                                        value={pass} onChange={e=>setPass(e.target.value)}
-                                        className="w-full bg-transparent border border-white/20 rounded-lg p-4 text-white placeholder-gray-600 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest transition-colors"
-                                        placeholder="••••••••" required 
-                                    />
-                                </div>
-                                <button disabled={loading} className="w-full bg-gradient-to-r from-brand-gold to-[#a18241] text-brand-black font-bold py-4 rounded-lg hover:shadow-[0_0_20px_rgba(197,160,89,0.2)] transition-all transform active:scale-[0.99] mt-2 text-xs tracking-widest uppercase">
-                                    {loading ? 'Verificando...' : 'Autenticar Dispositivo'}
-                                </button>
-                            </form>
-                            
-                            <div className="mt-8 pt-6 border-t border-white/5 text-center">
-                                <p className="text-[10px] text-brand-muted font-mono" title={currentDeviceId}>
-                                    TERMINAL ID: <span className="text-gray-500 hover:text-white transition-colors cursor-help">{currentDeviceId.substring(0,16)}...</span>
-                                </p>
-                            </div>
+                    <div className="space-y-6 animate-fade-in">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <Kpi title="Ventas Totales" val={Security.formatMoney(totalRev)} icon="fa-sack-dollar" color="text-brand-gold" />
+                            <Kpi title="Pedidos" val={orders.length} icon="fa-box" color="text-blue-400" />
+                            <Kpi title="Ticket Promedio" val={Security.formatMoney(avgTicket)} icon="fa-chart-pie" color="text-purple-400" />
+                            <Kpi title="Usuarios" val={users.length} icon="fa-users" color="text-green-400" />
+                        </div>
+                        <div className="glass-panel p-6 rounded-xl">
+                            <h3 className="text-white mb-4">Rendimiento Semanal</h3>
+                            <div className="h-64"><canvas ref={chartRef}></canvas></div>
                         </div>
                     </div>
                 );
             };
 
-            // --- MANAGER DE USUARIOS (Con Alta Manual) ---
-            const UserManager = () => {
-                const [users, setUsers] = React.useState([]);
-                const [newKey, setNewKey] = React.useState('');
-                const [newPass, setNewPass] = React.useState('');
-                const [creating, setCreating] = React.useState(false);
-
+            // --- ADMIN: MONITOR DE PEDIDOS (MEJORADO) ---
+            const AdminOrderMonitor = () => {
+                const [orders, setOrders] = React.useState([]);
+                const [selectedOrder, setSelectedOrder] = React.useState(null); // Para modal de detalles
+                
                 React.useEffect(() => {
-                    return onSnapshot(collection(db, 'users'), (s) => setUsers(s.docs.map(d => ({id: d.id, ...d.data()}))));
+                    const q = query(collection(db, "orders"));
+                    const unsubscribe = onSnapshot(q, (snapshot) => {
+                        const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        fetched.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                        setOrders(fetched);
+                    });
+                    return () => unsubscribe();
                 }, []);
 
-                const handleCreateUser = async (e) => {
-                    e.preventDefault();
-                    setCreating(true);
-                    
-                    let secondaryApp = null;
-                    try {
-                        const email = newKey.trim() + HIDDEN_DOMAIN;
-                        secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
-                        const secondaryAuth = getAuth(secondaryApp);
-                        
-                        const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, newPass);
-                        const uid = userCred.user.uid;
-                        
-                        await setDoc(doc(db, 'users', uid), {
-                            username: newKey.toUpperCase(),
-                            email: email,
-                            role: 'client', 
-                            registeredDeviceId: null, 
-                            status: 'active',
-                            createdAt: serverTimestamp()
-                        });
-                        
-                        alert(`Usuario ${newKey.toUpperCase()} creado exitosamente.`);
-                        setNewKey('');
-                        setNewPass('');
-                        
-                    } catch (error) {
-                        console.error(error);
-                        if (error.code === 'auth/email-already-in-use') alert("Error: Esa Clave de Usuario ya existe.");
-                        else alert("Error al crear usuario: " + error.message);
-                    } finally {
-                        if (secondaryApp) deleteApp(secondaryApp); 
-                        setCreating(false);
+                const updateStatus = async (id, newStatus) => {
+                    try { await updateDoc(doc(db, "orders", id), { status: newStatus }); }
+                    catch(e) { alert("Error al actualizar estado: " + e.message); }
+                };
+
+                const handleDeleteOrder = async (id) => { 
+                    if(confirm("¿Seguro que deseas eliminar este pedido permanentemente?")) {
+                        try { await deleteDoc(doc(db, "orders", id)); }
+                        catch(e) { alert("Error al eliminar: " + e.message); }
                     }
                 };
 
-                const toggleRole = async (userId, currentRole) => {
-                    const newRole = currentRole === 'admin' ? 'client' : 'admin';
-                    if(confirm(`¿Cambiar rol a ${newRole}?`)) await updateDoc(doc(db, 'users', userId), { role: newRole });
-                };
-
-                const resetDevice = async (userId) => {
-                    if(confirm("¿Resetear huella de dispositivo? El usuario podrá vincular un nuevo equipo.")) await updateDoc(doc(db, 'users', userId), { registeredDeviceId: null });
-                };
-
                 return (
-                    <div className="space-y-8">
-                        {/* Formulario de Alta */}
-                        <div className="glass-panel p-6 rounded-xl border-t border-brand-gold">
-                            <h3 className="text-sm text-brand-gold mb-4 font-mono uppercase tracking-wider flex items-center gap-2">
-                                <i className="fas fa-user-plus"></i> Alta de Nuevo Cliente
-                            </h3>
-                            <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                                <div>
-                                    <label className="text-[10px] text-gray-500 uppercase">Clave Única (Usuario)</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="EJ: CLIENTE_NUEVO" 
-                                        value={newKey} onChange={e=>setNewKey(e.target.value.toUpperCase())} 
-                                        className="w-full bg-black/50 border border-white/10 rounded p-2 text-white text-sm outline-none focus:border-brand-gold font-mono uppercase" 
-                                        required 
-                                    />
+                    <div className="space-y-4">
+                        {/* Modal Detalles */}
+                        {selectedOrder && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedOrder(null)}>
+                                <div className="bg-brand-surface border border-white/10 p-6 rounded-xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-white text-lg font-serif">Detalle Pedido: {selectedOrder.folio}</h3>
+                                        <button onClick={() => setSelectedOrder(null)} className="text-gray-400"><i className="fas fa-times"></i></button>
+                                    </div>
+                                    <div className="space-y-2 max-h-60 overflow-y-auto mb-4">
+                                        {selectedOrder.items.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between text-sm border-b border-white/5 py-2">
+                                                <span className="text-gray-300">{item.name}</span>
+                                                <span className="text-brand-gold">{Security.formatMoney(item.price)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-white/10">
+                                        <span>Total:</span>
+                                        <span>{Security.formatMoney(selectedOrder.total)}</span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="text-[10px] text-gray-500 uppercase">Contraseña Temporal</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Contraseña" 
-                                        value={newPass} onChange={e=>setNewPass(e.target.value)} 
-                                        className="w-full bg-black/50 border border-white/10 rounded p-2 text-white text-sm outline-none focus:border-brand-gold" 
-                                        required 
-                                    />
-                                </div>
-                                <button disabled={creating} className="bg-brand-gold text-black font-bold py-2 px-4 rounded hover:bg-white transition-colors text-xs uppercase tracking-wider h-10">
-                                    {creating ? 'Creando...' : 'Registrar Usuario'}
-                                </button>
-                            </form>
-                        </div>
+                            </div>
+                        )}
 
-                        {/* Lista de Usuarios */}
-                        <div className="glass-panel rounded-xl overflow-hidden">
+                        <div className="glass-panel rounded-xl overflow-hidden overflow-x-auto">
                             <table className="w-full text-left text-sm text-gray-400">
-                                <thead className="bg-white/5 text-white uppercase text-xs">
-                                    <tr><th className="p-4">Usuario</th><th className="p-4">Rol</th><th className="p-4">Estado Dispositivo</th><th className="p-4">Acciones</th></tr>
-                                </thead>
+                                <thead className="bg-white/5 text-white uppercase text-xs"><tr><th className="p-4">Folio</th><th className="p-4">Cliente</th><th className="p-4">Total</th><th className="p-4">Estado</th><th className="p-4 text-right">Acciones</th></tr></thead>
                                 <tbody className="divide-y divide-white/5">
-                                    {users.map(u => (
-                                        <tr key={u.id} className="hover:bg-white/5 transition-colors">
-                                            <td className="p-4 text-white font-mono tracking-wide">
-                                                {u.username || Security.cleanUsername(u.email)}
-                                                {Security.cleanUsername(u.email) === MASTER_KEY && <i className="fas fa-crown text-brand-gold ml-2"></i>}
-                                            </td>
-                                            <td className="p-4"><span className={`px-2 py-1 rounded text-[10px] uppercase border ${u.role==='admin'?'border-purple-500 text-purple-400':'border-gray-600 text-gray-400'}`}>{u.role}</span></td>
-                                            <td className="p-4 text-xs">
-                                                {u.registeredDeviceId ? 
-                                                    <span className="text-green-500 font-mono" title={u.registeredDeviceId}>
-                                                        {u.registeredDeviceId.substring(0,8)}... <i className="fas fa-check-circle"></i>
-                                                    </span> 
-                                                    : 
-                                                    <span className="text-yellow-500 animate-pulse">Sin Vinculación</span>
-                                                }
-                                            </td>
-                                            <td className="p-4 flex gap-2">
-                                                {Security.cleanUsername(u.email) !== MASTER_KEY && (
-                                                    <>
-                                                        <button onClick={()=>toggleRole(u.id, u.role)} className="w-8 h-8 rounded bg-white/5 hover:bg-white/20 text-white" title="Cambiar Rol"><i className="fas fa-user-tag"></i></button>
-                                                        <button onClick={()=>resetDevice(u.id)} className="w-8 h-8 rounded bg-white/5 hover:bg-white/20 text-white" title="Desvincular Dispositivo"><i className="fas fa-mobile-alt"></i></button>
-                                                    </>
-                                                )}
+                                    {orders.map(o => (
+                                        <tr key={o.id} className="hover:bg-white/5">
+                                            <td className="p-4 font-mono text-brand-gold">{o.folio || '---'}</td>
+                                            <td className="p-4 text-white uppercase">{o.username}</td>
+                                            <td className="p-4">{Security.formatMoney(o.total)}</td>
+                                            <td className="p-4"><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`bg-transparent border border-white/20 rounded px-2 py-1 text-xs outline-none ${o.status==='Pendiente'?'text-yellow-500':'text-green-500'}`}><option value="Pendiente">Pendiente</option><option value="Enviado">Enviado</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select></td>
+                                            <td className="p-4 text-right flex justify-end gap-2">
+                                                <button onClick={()=>setSelectedOrder(o)} className="text-blue-400 hover:bg-white/10 p-2 rounded" title="Ver Detalles"><i className="fas fa-eye"></i></button>
+                                                <button onClick={()=>handleDeleteOrder(o.id)} className="text-red-500 hover:bg-white/10 p-2 rounded" title="Eliminar"><i className="fas fa-trash"></i></button>
                                             </td>
                                         </tr>
                                     ))}
@@ -416,50 +293,161 @@
                 );
             };
 
-            const ProductManager = () => {
-                const [products, setProducts] = React.useState([]);
-                const [newProd, setNewProd] = React.useState({ name: '', price: '', category: 'Hardware', image: '', stock: 1 });
-                const [loading, setLoading] = React.useState(false);
-
+            // --- CLIENTE: LISTA PEDIDOS ---
+            const ClientOrderList = ({ user }) => {
+                const [orders, setOrders] = React.useState([]);
                 React.useEffect(() => {
-                    return onSnapshot(collection(db, 'products'), (s) => setProducts(s.docs.map(d => ({id: d.id, ...d.data()}))));
-                }, []);
+                    const q = query(collection(db, "orders"), where("userId", "==", user.uid));
+                    const unsubscribe = onSnapshot(q, (snapshot) => {
+                        const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        fetched.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                        setOrders(fetched);
+                    });
+                    return () => unsubscribe();
+                }, [user.uid]);
 
-                const handleAdd = async (e) => {
-                    e.preventDefault(); setLoading(true);
-                    try { await addDoc(collection(db, 'products'), { ...newProd, price: Number(newProd.price), stock: Number(newProd.stock), createdAt: serverTimestamp() }); setNewProd({ name: '', price: '', category: 'Hardware', image: '', stock: 1 }); } catch(e) { alert("Error"); }
-                    setLoading(false);
+                return (
+                    <div className="space-y-4">
+                        {orders.length === 0 ? <p className="text-gray-500 text-center py-10">Sin pedidos.</p> : orders.map(order => (
+                            <div key={order.id} className="glass-panel p-5 rounded-xl border-l-4 border-brand-gold/50 flex flex-col justify-between gap-4">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <span className="font-mono text-brand-gold text-lg block">{order.folio}</span>
+                                        <p className="text-xs text-gray-400">{Security.formatDate(order.createdAt)} • {order.items.length} Items</p>
+                                    </div>
+                                    <span className="bg-white/10 px-2 py-1 rounded text-xs uppercase">{order.status}</span>
+                                </div>
+                                <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                                    <span className="text-xl font-serif text-white">{Security.formatMoney(order.total)}</span>
+                                    <button onClick={() => generatePDF(order)} className="text-white hover:text-brand-gold"><i className="fas fa-file-pdf fa-lg"></i></button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                );
+            };
+
+            // --- GESTIÓN DE USUARIOS (MEJORADO) ---
+            const UserManager = () => {
+                const [users, setUsers] = React.useState([]);
+                const [newKey, setNewKey] = React.useState('');
+                const [newPass, setNewPass] = React.useState('');
+                const [creating, setCreating] = React.useState(false);
+                const [editingUser, setEditingUser] = React.useState(null);
+
+                React.useEffect(() => onSnapshot(collection(db, 'users'), (s) => setUsers(s.docs.map(d => ({id: d.id, ...d.data()})))), []);
+
+                const createUser = async (e) => {
+                    e.preventDefault(); setCreating(true);
+                    let app2; try { 
+                        const email = newKey.trim() + HIDDEN_DOMAIN;
+                        app2 = initializeApp(firebaseConfig, "SecondaryApp"); 
+                        const u = await createUserWithEmailAndPassword(getAuth(app2), email, newPass); 
+                        await setDoc(doc(db, 'users', u.user.uid), { username: newKey.toUpperCase(), email, role: 'client', status: 'active', createdAt: serverTimestamp() }); 
+                        alert("Creado."); setNewKey(''); setNewPass(''); 
+                    } catch(e) { alert(e.message); } finally { if(app2) deleteApp(app2); setCreating(false); }
                 };
 
-                const handleDelete = async (id) => { if(confirm("¿Eliminar?")) await deleteDoc(doc(db, 'products', id)); };
+                const saveEdit = async () => {
+                    if(!editingUser) return;
+                    try { await updateDoc(doc(db, 'users', editingUser.id), { username: editingUser.username.toUpperCase(), role: editingUser.role }); setEditingUser(null); } 
+                    catch(e) { alert(e.message); }
+                };
+
+                const toggleStatus = async (uid, currentStatus) => {
+                    if(confirm("¿Cambiar estado?")) await updateDoc(doc(db, 'users', uid), { status: currentStatus === 'active' ? 'suspended' : 'active' });
+                };
+                const resetDevice = async (uid) => {
+                    if(confirm("¿Resetear dispositivo?")) await updateDoc(doc(db, 'users', uid), { registeredDeviceId: null });
+                };
+                const deleteUser = async (uid) => {
+                    if(confirm("⚠️ ¿ELIMINAR USUARIO?")) await deleteDoc(doc(db, 'users', uid));
+                };
 
                 return (
                     <div className="space-y-6">
-                        <div className="glass-panel p-6 rounded-xl border-t border-brand-success">
-                            <h3 className="text-sm text-brand-success mb-4 font-mono uppercase tracking-wider">Alta de Inventario</h3>
-                            <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                                <input placeholder="Nombre Item" value={newProd.name} onChange={e=>setNewProd({...newProd, name: e.target.value})} className="md:col-span-2 bg-black/50 border border-white/10 rounded p-2 text-white text-sm outline-none focus:border-brand-success" required />
-                                <input placeholder="URL Imagen" value={newProd.image} onChange={e=>setNewProd({...newProd, image: e.target.value})} className="bg-black/50 border border-white/10 rounded p-2 text-white text-sm outline-none focus:border-brand-success" required />
-                                <select value={newProd.category} onChange={e=>setNewProd({...newProd, category: e.target.value})} className="bg-black/50 border border-white/10 rounded p-2 text-white text-sm outline-none"><option>Hardware</option><option>Software</option><option>Servicios</option><option>Infraestructura</option></select>
-                                <input type="number" placeholder="Precio" value={newProd.price} onChange={e=>setNewProd({...newProd, price: e.target.value})} className="bg-black/50 border border-white/10 rounded p-2 text-white text-sm outline-none focus:border-brand-success" required />
-                                <button disabled={loading} className="md:col-span-5 bg-brand-success/10 text-brand-success border border-brand-success hover:bg-brand-success hover:text-black py-2 rounded uppercase text-xs font-bold transition">{loading ? 'Procesando...' : 'Registrar Item'}</button>
-                            </form>
+                        <div className="glass-panel p-6 rounded-xl border-t border-brand-gold">
+                            <form onSubmit={createUser} className="flex gap-2"><input value={newKey} onChange={e=>setNewKey(e.target.value.toUpperCase())} placeholder="USUARIO" className="bg-black/50 border border-white/10 p-2 rounded text-white text-sm flex-1" required /><input value={newPass} onChange={e=>setNewPass(e.target.value)} placeholder="CLAVE" className="bg-black/50 border border-white/10 p-2 rounded text-white text-sm flex-1" required /><button disabled={creating} className="bg-brand-gold text-black px-4 rounded text-xs font-bold">CREAR</button></form>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {products.map(p => (
-                                <div key={p.id} className="glass-panel p-3 rounded flex gap-3 items-center group relative">
-                                    <img src={p.image} className="w-12 h-12 rounded object-cover bg-black" onError={(e)=>e.target.src='https://via.placeholder.com/50'} />
-                                    <div className="flex-1 overflow-hidden"><p className="text-white text-sm truncate">{p.name}</p><p className="text-brand-gold text-xs">{Security.formatMoney(p.price)}</p></div>
-                                    <button onClick={() => handleDelete(p.id)} className="absolute top-2 right-2 text-gray-600 hover:text-red-500 transition"><i className="fas fa-times"></i></button>
+                        {editingUser && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                                <div className="bg-brand-surface border border-white/10 p-6 rounded-xl w-full max-w-sm">
+                                    <h3 className="text-white mb-4">Editar Usuario</h3>
+                                    <input value={editingUser.username} onChange={e=>setEditingUser({...editingUser, username: e.target.value})} className="w-full bg-black/50 border border-white/10 p-2 rounded text-white mb-4"/>
+                                    <select value={editingUser.role} onChange={e=>setEditingUser({...editingUser, role: e.target.value})} className="w-full bg-black/50 border border-white/10 p-2 rounded text-white mb-4"><option value="client">Cliente</option><option value="admin">Administrador</option></select>
+                                    <div className="flex gap-2"><button onClick={saveEdit} className="flex-1 bg-brand-success text-black py-2 rounded font-bold">GUARDAR</button><button onClick={()=>setEditingUser(null)} className="flex-1 border border-white/20 text-white py-2 rounded">CANCELAR</button></div>
                                 </div>
-                            ))}
+                            </div>
+                        )}
+                        <div className="glass-panel rounded-xl overflow-hidden overflow-x-auto">
+                            <table className="w-full text-left text-sm text-gray-400">
+                                <thead className="bg-white/5 text-white text-xs uppercase"><tr><th className="p-4">Usuario</th><th className="p-4">Rol</th><th className="p-4">Estado</th><th className="p-4">Disp.</th><th className="p-4 text-right">Acciones</th></tr></thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {users.map(u => {
+                                        const isMaster = Security.cleanUsername(u.email) === MASTER_KEY;
+                                        return (
+                                            <tr key={u.id} className="hover:bg-white/5">
+                                                <td className="p-4 text-white font-mono">{u.username || Security.cleanUsername(u.email)} {isMaster && <i className="fas fa-crown text-brand-gold"></i>}</td>
+                                                <td className="p-4">{u.role}</td>
+                                                <td className="p-4">{u.status}</td>
+                                                <td className="p-4 text-xs font-mono">{u.registeredDeviceId ? '...'+u.registeredDeviceId.slice(-4) : '-'}</td>
+                                                <td className="p-4 flex justify-end gap-2">
+                                                    {!isMaster && <><button onClick={()=>setEditingUser(u)} className="p-2 bg-white/5 rounded text-white"><i className="fas fa-pen"></i></button><button onClick={()=>toggleStatus(u.id, u.status)} className="p-2 bg-white/5 rounded text-white"><i className="fas fa-power-off"></i></button><button onClick={()=>resetDevice(u.id)} className="p-2 bg-white/5 rounded text-white"><i className="fas fa-mobile-alt"></i></button><button onClick={()=>deleteUser(u.id)} className="p-2 text-red-500 hover:bg-white/5 rounded"><i className="fas fa-trash"></i></button></>}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 );
             };
 
+            // --- PRODUCT MANAGER ---
+            const ProductManager = () => {
+                const [products, setProducts] = React.useState([]);
+                const [newProd, setNewProd] = React.useState({ name: '', price: '', category: 'Hardware', image: '', stock: 1 });
+                const fileInputRef = React.useRef();
+                React.useEffect(() => onSnapshot(collection(db, 'products'), s => setProducts(s.docs.map(d => ({id:d.id, ...d.data()})))), []);
+                
+                const add = async (e) => { e.preventDefault(); await addDoc(collection(db, 'products'), { ...newProd, price: Number(newProd.price), stock: Number(newProd.stock), createdAt: serverTimestamp() }); setNewProd({ name: '', price: '', category: 'Hardware', image: '', stock: 1 }); };
+                const downloadTemplate = () => { const link = document.createElement("a"); link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8,nombre,precio,categoria,imagen_url,stock\nProducto1,100,Hardware,,10")); link.setAttribute("download", "plantilla.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link); };
+                const handleBulk = (e) => {
+                    const f = e.target.files[0]; if(!f) return;
+                    const r = new FileReader(); r.onload = async (ev) => {
+                        const rows = ev.target.result.split('\n').slice(1);
+                        let c = 0;
+                        for (let row of rows) { const [n, p, cat, img, s] = row.split(','); if(n&&p) { await addDoc(collection(db, 'products'), { name:n.trim(), price:Number(p), category:cat?.trim()||'G', image:img?.trim()||'', stock:Number(s)||1, createdAt: serverTimestamp() }); c++; } }
+                        alert(`Cargados: ${c}`); e.target.value = null;
+                    }; r.readAsText(f);
+                };
+
+                return (
+                    <div className="space-y-6">
+                        <div className="glass-panel p-6 rounded-xl border-t border-brand-success flex justify-between">
+                            <h3 className="text-sm text-brand-success font-bold uppercase">Inventario</h3>
+                            <div className="flex gap-2"><button onClick={downloadTemplate} className="bg-white/5 text-gray-300 px-3 py-2 rounded text-xs">Plantilla</button><label className="bg-brand-success/20 text-brand-success px-3 py-2 rounded text-xs cursor-pointer">Carga CSV<input type="file" className="hidden" ref={fileInputRef} onChange={handleBulk} /></label></div>
+                        </div>
+                        <div className="glass-panel p-4 rounded-xl">
+                            <form onSubmit={add} className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
+                                <input value={newProd.name} onChange={e=>setNewProd({...newProd, name: e.target.value})} placeholder="Nombre" className="md:col-span-2 bg-black/50 border border-white/10 p-2 rounded text-white text-sm" required />
+                                <input value={newProd.image} onChange={e=>setNewProd({...newProd, image: e.target.value})} placeholder="URL Img" className="bg-black/50 border border-white/10 p-2 rounded text-white text-sm" />
+                                <input type="number" value={newProd.price} onChange={e=>setNewProd({...newProd, price: e.target.value})} placeholder="Precio" className="bg-black/50 border border-white/10 p-2 rounded text-white text-sm" required />
+                                <select value={newProd.category} onChange={e=>setNewProd({...newProd, category: e.target.value})} className="bg-black/50 border border-white/10 p-2 rounded text-white text-sm"><option>Hardware</option><option>Software</option><option>Servicios</option></select>
+                                <button className="bg-brand-success text-black border border-brand-success px-4 h-9 rounded text-xs font-bold w-full">GUARDAR</button>
+                            </form>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {products.map(p => (<div key={p.id} className="glass-panel p-3 rounded relative group"><button onClick={()=>deleteDoc(doc(db,'products',p.id))} className="absolute top-1 right-1 z-10 text-red-500 opacity-0 group-hover:opacity-100"><i className="fas fa-times"></i></button><img src={p.image} className="w-full h-24 object-cover rounded bg-black mb-2" onError={(e)=>e.target.src='https://via.placeholder.com/150'} /><div className="text-white text-xs truncate font-bold">{p.name}</div><div className="text-brand-gold text-xs font-mono">{Security.formatMoney(p.price)}</div></div>))}
+                        </div>
+                    </div>
+                );
+            };
+
+            // --- APP MAIN ---
             const StoreApp = ({ user, role, onLogout }) => {
-                const [view, setView] = React.useState('store'); 
+                const [view, setView] = React.useState(role === 'admin' ? 'dashboard' : 'store'); 
                 const [products, setProducts] = React.useState([]);
                 const [cart, setCart] = React.useState([]);
                 const [cartOpen, setCartOpen] = React.useState(false);
@@ -468,81 +456,161 @@
                 React.useEffect(() => onSnapshot(collection(db, 'products'), (s) => setProducts(s.docs.map(d => ({id: d.id, ...d.data()})))), []);
 
                 const addToCart = (p) => { setCart([...cart, p]); setCartOpen(true); };
+                const removeFromCart = (idx) => { const c = [...cart]; c.splice(idx, 1); setCart(c); };
+
                 const checkout = async () => {
                     if(!cart.length) return;
-                    await addDoc(collection(db, "orders"), { userId: user.uid, username: username, items: cart, total: cart.reduce((a,b)=>a+b.price,0), status: 'Pendiente', createdAt: serverTimestamp(), deviceId: Security.getDeviceId() });
-                    setCart([]); setCartOpen(false); setView('orders');
+                    try {
+                        const folioRef = doc(db, 'settings', 'folio');
+                        const total = cart.reduce((a,b)=>a+b.price,0);
+                        await runTransaction(db, async (t) => {
+                            const fDoc = await t.get(folioRef);
+                            const cfg = fDoc.exists() ? fDoc.data() : { prefix: 'LMS', nextIndex: 1000 };
+                            const folio = `${cfg.prefix}-${cfg.nextIndex}`;
+                            t.set(folioRef, { ...cfg, nextIndex: Number(cfg.nextIndex) + 1 });
+                            const orderData = { userId: user.uid, username, items: cart, total, status: 'Pendiente', createdAt: serverTimestamp(), deviceId: Security.getDeviceId(), folio };
+                            t.set(doc(collection(db, "orders")), orderData);
+                        });
+                        if(confirm("✅ Pedido realizado.\n\n¿Descargar ticket PDF?")) {
+                            generatePDF({ folio: 'NUEVO', username, items: cart, total, createdAt: {seconds: Date.now()/1000} }); 
+                        }
+                        setCart([]); setCartOpen(false); 
+                    } catch (e) { alert("Error: " + e.message); }
                 };
 
                 return (
                     <div className="min-h-screen bg-brand-dark flex flex-col md:flex-row">
                         <aside className="hidden md:flex flex-col w-64 glass-panel border-r border-white/5 h-screen sticky top-0 z-30 p-6">
-                            <h2 className="font-serif text-2xl text-white tracking-widest mb-8">LUMOS</h2>
+                            <h2 className="font-serif text-2xl text-white tracking-widest mb-8 flex items-center gap-2"><i className="fas fa-fingerprint text-brand-gold"></i> LUMOS</h2>
                             <nav className="space-y-2">
-                                <button onClick={()=>setView('store')} className={`w-full text-left p-3 rounded text-sm ${view==='store'?'bg-white/5 text-brand-gold':'text-gray-400'}`}><i className="fas fa-th-large w-5"></i> Catálogo</button>
+                                <button onClick={()=>setView('store')} className={`w-full text-left p-3 rounded text-sm ${view==='store'?'bg-white/5 text-brand-gold':'text-gray-400'}`}><i className="fas fa-store w-5"></i> Catálogo</button>
+                                <button onClick={()=>setCartOpen(true)} className="w-full text-left p-3 rounded text-sm text-gray-400 hover:text-brand-gold"><i className="fas fa-shopping-cart w-5"></i> Carrito ({cart.length})</button>
                                 <button onClick={()=>setView('orders')} className={`w-full text-left p-3 rounded text-sm ${view==='orders'?'bg-white/5 text-brand-gold':'text-gray-400'}`}><i className="fas fa-clock w-5"></i> Mis Pedidos</button>
                                 {role === 'admin' && (
                                     <>
-                                        <div className="pt-4 mt-4 border-t border-white/5 text-[10px] text-gray-500 uppercase tracking-widest mb-2">Administración</div>
-                                        <button onClick={()=>setView('inventory')} className={`w-full text-left p-3 rounded text-sm ${view==='inventory'?'bg-brand-success/10 text-brand-success':'text-gray-400'}`}><i className="fas fa-boxes w-5"></i> Inventario</button>
-                                        <button onClick={()=>setView('users')} className={`w-full text-left p-3 rounded text-sm ${view==='users'?'bg-purple-500/20 text-purple-400':'text-gray-400'}`}><i className="fas fa-users w-5"></i> Usuarios</button>
+                                        <div className="pt-4 mt-4 border-t border-white/5 text-[10px] text-gray-500 uppercase tracking-widest mb-2">Admin</div>
+                                        <button onClick={()=>setView('dashboard')} className={`w-full text-left p-3 rounded text-sm ${view==='dashboard'?'bg-brand-gold/10 text-brand-gold':'text-gray-400'}`}><i className="fas fa-chart-pie w-5"></i> Dashboard</button>
+                                        <button onClick={()=>setView('admin_orders')} className={`w-full text-left p-3 rounded text-sm ${view==='admin_orders'?'bg-brand-success/10 text-brand-success':'text-gray-400'}`}><i className="fas fa-list w-5"></i> Pedidos</button>
+                                        <button onClick={()=>setView('inventory')} className={`w-full text-left p-3 rounded text-sm ${view==='inventory'?'bg-white/5 text-white':'text-gray-400'}`}><i className="fas fa-boxes w-5"></i> Inventario</button>
+                                        <button onClick={()=>setView('users')} className={`w-full text-left p-3 rounded text-sm ${view==='users'?'bg-white/5 text-white':'text-gray-400'}`}><i className="fas fa-users w-5"></i> Usuarios</button>
                                     </>
                                 )}
                             </nav>
-                            <div className="mt-auto pt-6 border-t border-white/5">
-                                <div className="text-xs text-brand-gold font-mono mb-2 flex items-center gap-2"><div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> {username}</div>
-                                <button onClick={onLogout} className="text-red-400 text-xs hover:text-red-300">Cerrar Enlace</button>
-                            </div>
+                            <div className="mt-auto pt-6 border-t border-white/5"><div className="text-xs text-brand-gold font-mono mb-2 truncate">{username}</div><button onClick={onLogout} className="text-red-400 text-xs hover:text-red-300">Cerrar Sesión</button></div>
                         </aside>
 
-                        <main className="flex-1 p-6 md:p-10 pt-20 md:pt-10 overflow-y-auto h-screen">
+                        <main className="flex-1 p-4 md:p-10 pt-20 md:pt-10 overflow-y-auto h-screen relative">
+                            {/* Mobile Header */}
                             <div className="md:hidden fixed top-0 left-0 right-0 glass-panel p-4 flex justify-between items-center z-40">
-                                <span className="font-serif text-brand-gold">LUMOS</span>
+                                <span className="font-serif text-brand-gold"><i className="fas fa-fingerprint"></i> LUMOS</span>
                                 <div className="flex gap-4">
-                                    <button onClick={()=>setCartOpen(true)} className="text-white relative"><i className="fas fa-shopping-bag"></i>{cart.length>0 && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</button>
-                                    {role==='admin' && <button onClick={()=>setView('inventory')} className="text-brand-success"><i className="fas fa-boxes"></i></button>}
+                                    <button onClick={()=>setCartOpen(true)} className="text-white relative"><i className="fas fa-shopping-cart"></i>{cart.length>0 && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</button>
+                                    {role==='admin' && <><button onClick={()=>setView('dashboard')} className="text-brand-gold"><i className="fas fa-chart-pie"></i></button><button onClick={()=>setView('admin_orders')} className="text-brand-success"><i className="fas fa-list"></i></button></>}
                                 </div>
                             </div>
 
                             {view === 'store' && (
                                 <div className="animate-fade-in max-w-6xl mx-auto">
-                                    <h1 className="text-3xl font-serif text-white mb-6">Colección</h1>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        {products.length === 0 ? <p className="text-gray-500 col-span-3 text-center py-20">Sistema en línea. Esperando carga de inventario.</p> : products.map(p => (
+                                    <h1 className="text-2xl md:text-3xl font-serif text-white mb-6">Catálogo Exclusivo</h1>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 md:mb-0">
+                                        {products.map(p => (
                                             <div key={p.id} className="glass-panel rounded-xl overflow-hidden group hover:border-brand-gold/30 transition-all duration-300">
-                                                <div className="h-48 overflow-hidden relative">
-                                                    <img src={p.image} className="w-full h-full object-cover transition duration-700 group-hover:scale-110" onError={(e)=>e.target.src='https://via.placeholder.com/300?text=No+Image'}/>
-                                                    <div className="absolute top-2 left-2 bg-black/60 backdrop-blur px-2 py-1 text-[10px] text-white rounded border border-white/10">{p.category}</div>
-                                                </div>
-                                                <div className="p-5">
-                                                    <h3 className="text-white font-medium">{p.name}</h3>
-                                                    <div className="flex justify-between items-center mt-4">
-                                                        <span className="text-brand-gold text-lg font-serif">{Security.formatMoney(p.price)}</span>
-                                                        <button onClick={()=>addToCart(p)} className="w-8 h-8 rounded-full bg-white/10 hover:bg-brand-gold hover:text-black text-white flex items-center justify-center transition"><i className="fas fa-plus"></i></button>
-                                                    </div>
-                                                </div>
+                                                <div className="h-48 overflow-hidden relative"><img src={p.image} className="w-full h-full object-cover transition duration-700 group-hover:scale-110" onError={(e)=>e.target.src='https://via.placeholder.com/300?text=No+Image'}/><div className="absolute top-2 left-2 bg-black/60 backdrop-blur px-2 py-1 text-[10px] text-white rounded border border-white/10">{p.category}</div></div>
+                                                <div className="p-5"><h3 className="text-white font-medium">{p.name}</h3><div className="flex justify-between items-center mt-4"><span className="text-brand-gold text-lg font-serif">{Security.formatMoney(p.price)}</span><button onClick={()=>addToCart(p)} className="w-8 h-8 rounded-full bg-white/10 hover:bg-brand-gold hover:text-black text-white flex items-center justify-center transition"><i className="fas fa-plus"></i></button></div></div>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {view === 'inventory' && role === 'admin' && <div className="animate-fade-in max-w-5xl mx-auto"><h1 className="text-3xl font-serif text-white mb-6">Inventario</h1><ProductManager /></div>}
-                            {view === 'users' && role === 'admin' && <div className="animate-fade-in max-w-5xl mx-auto"><h1 className="text-3xl font-serif text-white mb-6">Usuarios</h1><UserManager /></div>}
+                            {view === 'orders' && <div className="animate-fade-in max-w-4xl mx-auto mb-20"><h1 className="text-2xl text-white mb-6">Mis Pedidos</h1><ClientOrderList user={user} /></div>}
+                            {view === 'dashboard' && role === 'admin' && <div className="animate-fade-in max-w-6xl mx-auto mb-20"><DashboardAnalytics /></div>}
+                            {view === 'admin_orders' && role === 'admin' && <div className="animate-fade-in max-w-6xl mx-auto mb-20"><h1 className="text-2xl text-white mb-6">Monitor de Pedidos</h1><AdminOrderMonitor /></div>}
+                            {view === 'inventory' && role === 'admin' && <div className="animate-fade-in max-w-5xl mx-auto mb-20"><h1 className="text-2xl text-white mb-6">Inventario</h1><ProductManager /></div>}
+                            {view === 'users' && role === 'admin' && <div className="animate-fade-in max-w-6xl mx-auto mb-20"><h1 className="text-2xl text-white mb-6">Gestión de Usuarios</h1><UserManager /></div>}
                         </main>
 
                         {cartOpen && (
-                            <div className="fixed inset-0 z-50 flex justify-end">
+                            <div className="fixed inset-0 z-[50] flex justify-end">
                                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={()=>setCartOpen(false)}></div>
-                                <div className="relative w-full max-w-md bg-brand-surface h-full shadow-2xl animate-slide-in border-l border-white/10 flex flex-col p-6">
-                                    <div className="flex justify-between items-center mb-6"><h2 className="font-serif text-white text-xl">Bolsa Segura</h2><button onClick={()=>setCartOpen(false)} className="text-gray-400"><i className="fas fa-times"></i></button></div>
-                                    <div className="flex-1 overflow-y-auto space-y-4">
-                                        {cart.map((item,i)=>(<div key={i} className="flex gap-4 p-3 glass-panel rounded"><img src={item.image} className="w-12 h-12 rounded object-cover"/><div className="flex-1"><p className="text-white text-sm">{item.name}</p><p className="text-brand-gold text-xs">{Security.formatMoney(item.price)}</p></div></div>))}
-                                    </div>
-                                    <button onClick={checkout} className="w-full bg-brand-gold text-black font-bold py-3 rounded mt-4 uppercase tracking-widest text-xs">Confirmar Pedido {Security.formatMoney(cart.reduce((a,b)=>a+b.price,0))}</button>
+                                <div className="relative w-full md:w-[450px] bg-brand-surface h-full shadow-2xl border-l border-white/10 flex flex-col p-6 animate-slide-in">
+                                    <div className="flex justify-between items-center mb-6"><h2 className="font-serif text-white text-xl">Bolsa</h2><button onClick={()=>setCartOpen(false)} className="text-gray-400 hover:text-white"><i className="fas fa-times text-xl"></i></button></div>
+                                    <div className="flex-1 overflow-y-auto space-y-4">{cart.length === 0 ? <p className="text-gray-500 text-center mt-10">Vacía.</p> : cart.map((item,i)=>(<div key={i} className="flex gap-4 p-3 glass-panel rounded items-center"><img src={item.image} className="w-12 h-12 rounded object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/50'}/><div className="flex-1 overflow-hidden"><p className="text-white text-sm truncate">{item.name}</p><p className="text-brand-gold text-xs">{Security.formatMoney(item.price)}</p></div><button onClick={()=>removeFromCart(i)} className="text-red-500 hover:text-red-300"><i className="fas fa-trash"></i></button></div>))}</div>
+                                    <div className="mt-6 pt-6 border-t border-white/10"><div className="flex justify-between mb-4"><span className="text-gray-400">Total</span><span className="text-brand-gold text-xl font-bold">{Security.formatMoney(cart.reduce((a,b)=>a+b.price,0))}</span></div><button onClick={checkout} disabled={cart.length===0} className="w-full bg-brand-gold text-black font-bold py-3 rounded uppercase tracking-widest text-xs hover:bg-white transition disabled:opacity-50">Confirmar</button></div>
                                 </div>
                             </div>
                         )}
+                    </div>
+                );
+            };
+
+            // --- LOGIN ---
+            const LoginScreen = ({ onLogin }) => {
+                const [username, setUsername] = React.useState('');
+                const [pass, setPass] = React.useState('');
+                const [loading, setLoading] = React.useState(false);
+                const [error, setError] = React.useState(null);
+                const [capsLock, setCapsLock] = React.useState(false);
+                const currentDeviceId = Security.getDeviceId(); 
+
+                const processLogin = async (userAuth, isNewUser = false) => {
+                    const userRef = doc(db, 'users', userAuth.uid);
+                    const userSnap = await getDoc(userRef);
+                    const inputUser = Security.cleanUsername(userAuth.email);
+
+                    if (!userSnap.exists()) {
+                        const initialRole = (inputUser.toUpperCase() === MASTER_KEY.toUpperCase()) ? 'admin' : 'client';
+                        await setDoc(userRef, { username: inputUser, email: userAuth.email, role: initialRole, registeredDeviceId: currentDeviceId, status: 'active', createdAt: serverTimestamp() });
+                        onLogin(userAuth, initialRole);
+                    } else {
+                        const data = userSnap.data();
+                        if (data.status !== 'active') throw new Error("Acceso Revocado.");
+                        if (data.role === 'admin') { await updateDoc(userRef, { lastDeviceId: currentDeviceId }); onLogin(userAuth, 'admin'); return; }
+                        if (data.registeredDeviceId && data.registeredDeviceId !== currentDeviceId) { await signOut(auth); throw new Error(`Dispositivo no autorizado.`); }
+                        if (!data.registeredDeviceId) await updateDoc(userRef, { registeredDeviceId: currentDeviceId });
+                        onLogin(userAuth, data.role);
+                    }
+                };
+
+                const handleSubmit = async (e) => {
+                    e.preventDefault(); setLoading(true); setError(null);
+                    if (username.trim().toUpperCase() === MASTER_KEY.toUpperCase() && pass !== MASTER_PASS) { setError("Credenciales Maestras Incorrectas."); setLoading(false); return; }
+                    const fullEmail = username.trim() + HIDDEN_DOMAIN;
+                    try {
+                        try {
+                            const cred = await signInWithEmailAndPassword(auth, fullEmail, pass);
+                            await processLogin(cred.user);
+                        } catch (loginErr) {
+                            if ((loginErr.code === 'auth/user-not-found' || loginErr.code === 'auth/invalid-credential') && username.trim().toUpperCase() === MASTER_KEY.toUpperCase()) {
+                                const newCred = await createUserWithEmailAndPassword(auth, fullEmail, pass);
+                                await processLogin(newCred.user, true);
+                            } else throw loginErr;
+                        }
+                    } catch (err) { setError(err.code === 'auth/wrong-password' ? "Clave incorrecta." : err.message); setLoading(false); }
+                };
+
+                const handleKey = (e) => setCapsLock(e.getModifierState("CapsLock"));
+
+                return (
+                    <div className="min-h-screen flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center">
+                        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm"></div>
+                        <div className="relative z-10 w-full max-w-md p-10 glass-panel rounded-2xl shadow-2xl animate-fade-in border border-white/5">
+                            <div className="text-center mb-10">
+                                <div className="w-20 h-20 bg-gradient-to-tr from-brand-gold to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(197,160,89,0.3)] transform rotate-45">
+                                    <i className="fas fa-fingerprint text-4xl text-black transform -rotate-45"></i>
+                                </div>
+                                <h1 className="font-serif text-3xl text-white tracking-wide">LUMOS <span className="text-brand-gold">ELITE</span></h1>
+                                <p className="text-brand-muted text-[10px] uppercase tracking-[0.3em] mt-2">Acceso Seguro v11.0</p>
+                            </div>
+                            {error && <div className="mb-6 p-3 bg-red-900/20 border-l-2 border-red-500 text-red-200 text-xs flex items-center gap-2 animate-pulse"><i className="fas fa-exclamation-circle"></i> {error}</div>}
+                            <form onSubmit={handleSubmit} className="space-y-6" onKeyUp={handleKey}>
+                                <input type="text" value={username} onChange={e=>setUsername(e.target.value)} className="w-full bg-transparent border border-white/20 rounded-lg p-4 text-white placeholder-gray-600 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest" placeholder="USUARIO" required />
+                                <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full bg-transparent border border-white/20 rounded-lg p-4 text-white placeholder-gray-600 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest" placeholder="CLAVE" required />
+                                {capsLock && <div className="text-center text-yellow-500 text-xs mt-2"><i className="fas fa-exclamation-triangle"></i> MAYÚSCULAS ACTIVADAS</div>}
+                                <button disabled={loading} className="w-full bg-gradient-to-r from-brand-gold to-[#a18241] text-brand-black font-bold py-4 rounded-lg mt-2 text-xs tracking-widest uppercase hover:scale-[1.02] transition-transform">{loading ? '...' : 'AUTENTICAR'}</button>
+                            </form>
+                            <div className="mt-8 pt-6 border-t border-white/5 text-center"><p className="text-[10px] text-brand-muted font-mono">ID: <span className="text-gray-500">{currentDeviceId.substring(0,12)}...</span></p></div>
+                        </div>
                     </div>
                 );
             };
@@ -557,15 +625,8 @@
                         const snap = await getDoc(doc(db, "users", u.uid));
                         if(snap.exists()) {
                             const d = snap.data();
-                            
-                            // VALIDACIÓN DE SESIÓN ACTIVA (Permisiva para admin)
-                            if (d.role !== 'admin' && d.registeredDeviceId && d.registeredDeviceId !== Security.getDeviceId()) {
-                                await signOut(auth); 
-                                setUser(null); 
-                            } else { 
-                                setUser(u); 
-                                setRole(d.role); 
-                            }
+                            if (d.role !== 'admin' && d.registeredDeviceId && d.registeredDeviceId !== Security.getDeviceId()) { await signOut(auth); setUser(null); }
+                            else { setUser(u); setRole(d.role); }
                         } else { setUser(u); } 
                     } else { setUser(null); }
                     setLoading(false);
