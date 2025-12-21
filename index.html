@@ -117,7 +117,10 @@
             const Security = {
                 getDeviceId: () => {
                     let id = localStorage.getItem('lumos_elite_id');
-                    if (!id) { id = crypto.randomUUID(); localStorage.setItem('lumos_elite_id', id); }
+                    if (!id) { 
+                        id = crypto.randomUUID(); 
+                        localStorage.setItem('lumos_elite_id', id); 
+                    }
                     return id;
                 },
                 formatMoney: (amount) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount),
@@ -140,11 +143,11 @@
                 const [pass, setPass] = React.useState('');
                 const [loading, setLoading] = React.useState(false);
                 const [error, setError] = React.useState(null);
+                const currentDeviceId = Security.getDeviceId(); // ID actual del navegador
 
                 const processLogin = async (userAuth, isNewUser = false) => {
                     const userRef = doc(db, 'users', userAuth.uid);
                     const userSnap = await getDoc(userRef);
-                    const deviceId = Security.getDeviceId();
                     const inputUser = Security.cleanUsername(userAuth.email);
 
                     if (!userSnap.exists()) {
@@ -154,7 +157,7 @@
                             username: inputUser,
                             email: userAuth.email, 
                             role: initialRole, 
-                            registeredDeviceId: deviceId,
+                            registeredDeviceId: currentDeviceId,
                             status: 'active',
                             createdAt: serverTimestamp()
                         });
@@ -163,21 +166,25 @@
                         const data = userSnap.data();
                         if (data.status !== 'active') throw new Error("Acceso Revocado.");
                         
-                        // Verificación de Dispositivo
-                        if (data.registeredDeviceId && data.registeredDeviceId !== deviceId) {
-                            await signOut(auth); throw new Error("Dispositivo no autorizado.");
-                        }
-                        
-                        // Vincular dispositivo si estaba libre (ej. tras un reset por el master)
-                        if (!data.registeredDeviceId) await updateDoc(userRef, { registeredDeviceId: deviceId });
-                        
-                        // Asegurar rol Admin para Master
-                        if (inputUser.toUpperCase() === MASTER_KEY.toUpperCase() && data.role !== 'admin') {
-                            await updateDoc(userRef, { role: 'admin' });
+                        // LÓGICA DE VALIDACIÓN DE DISPOSITIVO MEJORADA
+                        // Si es ADMIN, NO verificamos el dispositivo (Paso Libre)
+                        if (data.role === 'admin') {
+                            // Opcional: Actualizar el último dispositivo usado por el admin solo para registro
+                            await updateDoc(userRef, { lastDeviceId: currentDeviceId });
                             onLogin(userAuth, 'admin');
-                        } else {
-                            onLogin(userAuth, data.role);
+                            return;
                         }
+
+                        // Si es CLIENTE, aplicamos seguridad estricta
+                        if (data.registeredDeviceId && data.registeredDeviceId !== currentDeviceId) {
+                            await signOut(auth); 
+                            throw new Error(`Dispositivo no autorizado. (ID Esperado: ...${data.registeredDeviceId.slice(-4)}, ID Actual: ...${currentDeviceId.slice(-4)})`);
+                        }
+                        
+                        // Vincular dispositivo si estaba libre
+                        if (!data.registeredDeviceId) await updateDoc(userRef, { registeredDeviceId: currentDeviceId });
+                        
+                        onLogin(userAuth, data.role);
                     }
                 };
 
@@ -201,9 +208,8 @@
                             const cred = await signInWithEmailAndPassword(auth, fullEmail, pass);
                             await processLogin(cred.user);
                         } catch (loginErr) {
-                            // SI FALLA LOGIN:
                             if (loginErr.code === 'auth/user-not-found' || loginErr.code === 'auth/invalid-credential') {
-                                // SEGURIDAD: Solo permitir Auto-Registro si es la MASTER KEY (Bootstrap del sistema)
+                                // Bootstrap Master
                                 if (username.trim().toUpperCase() === MASTER_KEY.toUpperCase()) {
                                     try {
                                         const newCred = await createUserWithEmailAndPassword(auth, fullEmail, pass);
@@ -213,7 +219,6 @@
                                         throw createErr;
                                     }
                                 } else {
-                                    // BLOQUEO PARA TODOS LOS DEMÁS
                                     throw new Error("Usuario no registrado. Solicite alta al Master.");
                                 }
                             } else {
@@ -272,8 +277,8 @@
                             </form>
                             
                             <div className="mt-8 pt-6 border-t border-white/5 text-center">
-                                <p className="text-[10px] text-brand-muted font-mono">
-                                    TERMINAL ID: <span className="text-gray-500">{Security.getDeviceId().substring(0,12)}</span>
+                                <p className="text-[10px] text-brand-muted font-mono" title={currentDeviceId}>
+                                    TERMINAL ID: <span className="text-gray-500 hover:text-white transition-colors cursor-help">{currentDeviceId.substring(0,16)}...</span>
                                 </p>
                             </div>
                         </div>
@@ -296,25 +301,20 @@
                     e.preventDefault();
                     setCreating(true);
                     
-                    // Técnica: Crear una 2da App de Firebase para registrar al usuario SIN desloguear al Admin
                     let secondaryApp = null;
                     try {
                         const email = newKey.trim() + HIDDEN_DOMAIN;
-                        
-                        // 1. Inicializar app secundaria temporal
                         secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
                         const secondaryAuth = getAuth(secondaryApp);
                         
-                        // 2. Crear usuario en Auth
                         const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, newPass);
                         const uid = userCred.user.uid;
                         
-                        // 3. Guardar datos en Firestore (usando la DB principal del Admin)
                         await setDoc(doc(db, 'users', uid), {
                             username: newKey.toUpperCase(),
                             email: email,
-                            role: 'client', // Por defecto cliente
-                            registeredDeviceId: null, // Pendiente de primer login
+                            role: 'client', 
+                            registeredDeviceId: null, 
                             status: 'active',
                             createdAt: serverTimestamp()
                         });
@@ -328,7 +328,7 @@
                         if (error.code === 'auth/email-already-in-use') alert("Error: Esa Clave de Usuario ya existe.");
                         else alert("Error al crear usuario: " + error.message);
                     } finally {
-                        if (secondaryApp) deleteApp(secondaryApp); // Limpiar app secundaria
+                        if (secondaryApp) deleteApp(secondaryApp); 
                         setCreating(false);
                     }
                 };
@@ -374,14 +374,13 @@
                                     {creating ? 'Creando...' : 'Registrar Usuario'}
                                 </button>
                             </form>
-                            <p className="text-[10px] text-gray-600 mt-2">* El usuario deberá iniciar sesión para vincular su dispositivo.</p>
                         </div>
 
                         {/* Lista de Usuarios */}
                         <div className="glass-panel rounded-xl overflow-hidden">
                             <table className="w-full text-left text-sm text-gray-400">
                                 <thead className="bg-white/5 text-white uppercase text-xs">
-                                    <tr><th className="p-4">Usuario</th><th className="p-4">Rol</th><th className="p-4">Estado</th><th className="p-4">Acciones</th></tr>
+                                    <tr><th className="p-4">Usuario</th><th className="p-4">Rol</th><th className="p-4">Estado Dispositivo</th><th className="p-4">Acciones</th></tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
                                     {users.map(u => (
@@ -391,7 +390,15 @@
                                                 {Security.cleanUsername(u.email) === MASTER_KEY && <i className="fas fa-crown text-brand-gold ml-2"></i>}
                                             </td>
                                             <td className="p-4"><span className={`px-2 py-1 rounded text-[10px] uppercase border ${u.role==='admin'?'border-purple-500 text-purple-400':'border-gray-600 text-gray-400'}`}>{u.role}</span></td>
-                                            <td className="p-4 text-xs">{u.registeredDeviceId ? <span className="text-green-500">Vinculado</span> : <span className="text-yellow-500 animate-pulse">Sin Dispositivo</span>}</td>
+                                            <td className="p-4 text-xs">
+                                                {u.registeredDeviceId ? 
+                                                    <span className="text-green-500 font-mono" title={u.registeredDeviceId}>
+                                                        {u.registeredDeviceId.substring(0,8)}... <i className="fas fa-check-circle"></i>
+                                                    </span> 
+                                                    : 
+                                                    <span className="text-yellow-500 animate-pulse">Sin Vinculación</span>
+                                                }
+                                            </td>
                                             <td className="p-4 flex gap-2">
                                                 {Security.cleanUsername(u.email) !== MASTER_KEY && (
                                                     <>
@@ -550,8 +557,15 @@
                         const snap = await getDoc(doc(db, "users", u.uid));
                         if(snap.exists()) {
                             const d = snap.data();
-                            if(d.registeredDeviceId && d.registeredDeviceId !== Security.getDeviceId()) { await signOut(auth); setUser(null); }
-                            else { setUser(u); setRole(d.role); }
+                            
+                            // VALIDACIÓN DE SESIÓN ACTIVA (Permisiva para admin)
+                            if (d.role !== 'admin' && d.registeredDeviceId && d.registeredDeviceId !== Security.getDeviceId()) {
+                                await signOut(auth); 
+                                setUser(null); 
+                            } else { 
+                                setUser(u); 
+                                setRole(d.role); 
+                            }
                         } else { setUser(u); } 
                     } else { setUser(null); }
                     setLoading(false);
