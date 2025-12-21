@@ -39,7 +39,7 @@
                             dark: '#0A0A0A',
                             surface: '#121212',
                             gold: '#C5A059',
-                            muted: '#525252',
+                            muted: '#737373',
                             danger: '#991B1B',
                             success: '#10B981',
                             accent: '#3b82f6'
@@ -57,26 +57,45 @@
                     keyframes: {
                         fadeIn: { '0%': { opacity: 0, transform: 'translateY(10px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
                         slideIn: { '0%': { transform: 'translateX(100%)' }, '100%': { transform: 'translateX(0)' } }
+                    },
+                    fontSize: {
+                        'xs': '0.75rem',
+                        'sm': '0.875rem',
+                        'base': '1rem', // 16px por defecto
+                        'lg': '1.125rem',
+                        'xl': '1.25rem',
+                        '2xl': '1.5rem',
+                        '3xl': '1.875rem',
+                        '4xl': '2.25rem',
                     }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #050505; color: #E5E5E5; overscroll-behavior-y: none; }
+        html { font-size: 16px; } /* Base font size fix */
+        body { background-color: #050505; color: #E5E5E5; overscroll-behavior-y: none; overflow-x: hidden; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #0A0A0A; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        .glass-panel { background: rgba(18, 18, 18, 0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        
+        .glass-panel { 
+            background: rgba(18, 18, 18, 0.9); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+        }
+        
         #loader-overlay { position: fixed; inset: 0; z-index: 9999; background: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         input[type="password"]::-ms-reveal, input[type="password"]::-ms-clear { display: none; }
         .status-badge { @apply px-2 py-1 rounded text-xs font-bold uppercase; }
         
-        /* Ajustes Móviles */
+        /* Ajustes Específicos para Móvil */
         @media (max-width: 768px) {
-            .glass-panel { padding: 1rem; } 
-            h1 { font-size: 1.5rem; }
-            th, td { white-space: nowrap; } /* Evita quiebre de tablas en movil */
+            .glass-panel { padding: 1rem; border-radius: 0.75rem; } 
+            h1 { font-size: 1.5rem; line-height: 1.2; }
+            th, td { white-space: nowrap; padding: 0.75rem !important; } 
+            input, select, button { min-height: 44px; /* Touch target size */ }
             .mobile-menu-enter { transform: translateX(-100%); }
             .mobile-menu-enter-active { transform: translateX(0); transition: transform 300ms; }
             .mobile-menu-exit { transform: translateX(0); }
@@ -219,7 +238,7 @@
                             labels,
                             datasets: [{ label: 'Ventas', data, borderColor: '#C5A059', backgroundColor: 'rgba(197,160,89,0.1)', fill: true }]
                         },
-                        options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#333' } } } }
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#333' } } } }
                     });
                 }, [orders]);
 
@@ -227,19 +246,19 @@
                     <div className="glass-panel p-4 rounded-xl border-l-4 border-brand-gold relative overflow-hidden">
                         <div className={`absolute right-2 top-2 p-2 rounded-lg bg-white/5 ${color} text-xl`}><i className={`fas ${icon}`}></i></div>
                         <p className="text-xs text-gray-400 uppercase tracking-wider">{title}</p>
-                        <h3 className="text-2xl text-white font-serif mt-1">{val}</h3>
+                        <h3 className="text-xl md:text-2xl text-white font-serif mt-1">{val}</h3>
                     </div>
                 );
 
                 return (
                     <div className="space-y-6 animate-fade-in">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                             <Kpi title="Ventas Totales" val={Security.formatMoney(totalRev)} icon="fa-sack-dollar" color="text-brand-gold" />
                             <Kpi title="Pedidos" val={orders.length} icon="fa-box" color="text-blue-400" />
                             <Kpi title="Ticket Promedio" val={Security.formatMoney(avgTicket)} icon="fa-chart-pie" color="text-purple-400" />
                             <Kpi title="Usuarios" val={users.length} icon="fa-users" color="text-green-400" />
                         </div>
-                        <div className="glass-panel p-6 rounded-xl">
+                        <div className="glass-panel p-4 md:p-6 rounded-xl h-80">
                             <h3 className="text-white mb-4">Rendimiento Semanal</h3>
                             <div className="h-64"><canvas ref={chartRef}></canvas></div>
                         </div>
@@ -300,7 +319,7 @@
                         )}
 
                         <div className="glass-panel rounded-xl overflow-hidden overflow-x-auto">
-                            <table className="w-full text-left text-sm text-gray-400">
+                            <table className="w-full text-left text-sm text-gray-400 min-w-[600px]">
                                 <thead className="bg-white/5 text-white uppercase text-xs"><tr><th className="p-4">Folio</th><th className="p-4">Cliente</th><th className="p-4">Total</th><th className="p-4">Estado</th><th className="p-4 text-right">Acciones</th></tr></thead>
                                 <tbody className="divide-y divide-white/5">
                                     {orders.map(o => (
@@ -308,7 +327,7 @@
                                             <td className="p-4 font-mono text-brand-gold">{o.folio || '---'}</td>
                                             <td className="p-4 text-white uppercase">{o.username}</td>
                                             <td className="p-4">{Security.formatMoney(o.total)}</td>
-                                            <td className="p-4"><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`bg-transparent border border-white/20 rounded px-2 py-1 text-xs outline-none ${o.status==='Pendiente'?'text-yellow-500':'text-green-500'}`}><option value="Pendiente">Pendiente</option><option value="Enviado">Enviado</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select></td>
+                                            <td className="p-4"><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`bg-transparent border border-white/20 rounded px-2 py-2 text-xs outline-none ${o.status==='Pendiente'?'text-yellow-500':'text-green-500'}`}><option value="Pendiente">Pendiente</option><option value="Enviado">Enviado</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select></td>
                                             <td className="p-4 text-right flex justify-end gap-2">
                                                 <button onClick={()=>setSelectedOrder(o)} className="text-blue-400 hover:bg-white/10 p-2 rounded" title="Ver Detalles"><i className="fas fa-eye"></i></button>
                                                 <button onClick={()=>handleDeleteOrder(o.id)} className="text-red-500 hover:bg-white/10 p-2 rounded" title="Eliminar"><i className="fas fa-trash"></i></button>
@@ -348,7 +367,7 @@
                                 </div>
                                 <div className="flex items-center justify-between border-t border-white/5 pt-3">
                                     <span className="text-xl font-serif text-white">{Security.formatMoney(order.total)}</span>
-                                    <button onClick={() => generatePDF(order)} className="text-white hover:text-brand-gold"><i className="fas fa-file-pdf fa-lg"></i></button>
+                                    <button onClick={() => generatePDF(order)} className="text-white hover:text-brand-gold p-2"><i className="fas fa-file-pdf fa-lg"></i></button>
                                 </div>
                             </div>
                         ))}
@@ -396,20 +415,24 @@
                 return (
                     <div className="space-y-6">
                         <div className="glass-panel p-6 rounded-xl border-t border-brand-gold">
-                            <form onSubmit={createUser} className="flex gap-2"><input value={newKey} onChange={e=>setNewKey(e.target.value.toUpperCase())} placeholder="USUARIO" className="bg-black/50 border border-white/10 p-2 rounded text-white text-sm flex-1" required /><input value={newPass} onChange={e=>setNewPass(e.target.value)} placeholder="CLAVE" className="bg-black/50 border border-white/10 p-2 rounded text-white text-sm flex-1" required /><button disabled={creating} className="bg-brand-gold text-black px-4 rounded text-xs font-bold">CREAR</button></form>
+                            <form onSubmit={createUser} className="flex flex-col md:flex-row gap-2">
+                                <input value={newKey} onChange={e=>setNewKey(e.target.value.toUpperCase())} placeholder="USUARIO" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1" required />
+                                <input value={newPass} onChange={e=>setNewPass(e.target.value)} placeholder="CLAVE" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1" required />
+                                <button disabled={creating} className="bg-brand-gold text-black px-4 py-3 md:py-0 rounded text-xs font-bold w-full md:w-auto">CREAR</button>
+                            </form>
                         </div>
                         {editingUser && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
                                 <div className="bg-brand-surface border border-white/10 p-6 rounded-xl w-full max-w-sm">
                                     <h3 className="text-white mb-4">Editar Usuario</h3>
-                                    <input value={editingUser.username} onChange={e=>setEditingUser({...editingUser, username: e.target.value})} className="w-full bg-black/50 border border-white/10 p-2 rounded text-white mb-4"/>
-                                    <select value={editingUser.role} onChange={e=>setEditingUser({...editingUser, role: e.target.value})} className="w-full bg-black/50 border border-white/10 p-2 rounded text-white mb-4"><option value="client">Cliente</option><option value="admin">Administrador</option></select>
-                                    <div className="flex gap-2"><button onClick={saveEdit} className="flex-1 bg-brand-success text-black py-2 rounded font-bold">GUARDAR</button><button onClick={()=>setEditingUser(null)} className="flex-1 border border-white/20 text-white py-2 rounded">CANCELAR</button></div>
+                                    <input value={editingUser.username} onChange={e=>setEditingUser({...editingUser, username: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 rounded text-white mb-4"/>
+                                    <select value={editingUser.role} onChange={e=>setEditingUser({...editingUser, role: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 rounded text-white mb-4"><option value="client">Cliente</option><option value="admin">Administrador</option></select>
+                                    <div className="flex gap-2"><button onClick={saveEdit} className="flex-1 bg-brand-success text-black py-3 rounded font-bold">GUARDAR</button><button onClick={()=>setEditingUser(null)} className="flex-1 border border-white/20 text-white py-3 rounded">CANCELAR</button></div>
                                 </div>
                             </div>
                         )}
                         <div className="glass-panel rounded-xl overflow-hidden overflow-x-auto">
-                            <table className="w-full text-left text-sm text-gray-400">
+                            <table className="w-full text-left text-sm text-gray-400 min-w-[600px]">
                                 <thead className="bg-white/5 text-white text-xs uppercase"><tr><th className="p-4">Usuario</th><th className="p-4">Rol</th><th className="p-4">Estado</th><th className="p-4">ID Disp.</th><th className="p-4 text-right">Acciones</th></tr></thead>
                                 <tbody className="divide-y divide-white/5">
                                     {users.map(u => {
@@ -420,7 +443,7 @@
                                                 <td className="p-4">{u.role}</td>
                                                 <td className="p-4">{u.status}</td>
                                                 <td className="p-4 text-xs font-mono text-brand-gold">
-                                                    {u.registeredDeviceId ? u.registeredDeviceId.substring(0,8)+'...' : '-'}
+                                                    {u.registeredDeviceId ? '...'+u.registeredDeviceId.slice(-8) : '---'}
                                                 </td>
                                                 <td className="p-4 flex justify-end gap-2">
                                                     {!isMaster && <><button onClick={()=>setEditingUser(u)} className="p-2 bg-white/5 rounded text-white"><i className="fas fa-pen"></i></button><button onClick={()=>toggleStatus(u.id, u.status)} className="p-2 bg-white/5 rounded text-white"><i className="fas fa-power-off"></i></button><button onClick={()=>resetDevice(u.id)} className="p-2 bg-white/5 rounded text-white"><i className="fas fa-mobile-alt"></i></button><button onClick={()=>deleteUser(u.id)} className="p-2 text-red-500 hover:bg-white/5 rounded"><i className="fas fa-trash"></i></button></>}
@@ -462,11 +485,11 @@
                         </div>
                         <div className="glass-panel p-4 rounded-xl">
                             <form onSubmit={add} className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
-                                <input value={newProd.name} onChange={e=>setNewProd({...newProd, name: e.target.value})} placeholder="Nombre" className="md:col-span-2 bg-black/50 border border-white/10 p-2 rounded text-white text-sm" required />
-                                <input value={newProd.image} onChange={e=>setNewProd({...newProd, image: e.target.value})} placeholder="URL Img" className="bg-black/50 border border-white/10 p-2 rounded text-white text-sm" />
-                                <input type="number" value={newProd.price} onChange={e=>setNewProd({...newProd, price: e.target.value})} placeholder="Precio" className="bg-black/50 border border-white/10 p-2 rounded text-white text-sm" required />
-                                <select value={newProd.category} onChange={e=>setNewProd({...newProd, category: e.target.value})} className="bg-black/50 border border-white/10 p-2 rounded text-white text-sm"><option>Hardware</option><option>Software</option><option>Servicios</option></select>
-                                <button className="bg-brand-success text-black border border-brand-success px-4 h-9 rounded text-xs font-bold w-full">GUARDAR</button>
+                                <input value={newProd.name} onChange={e=>setNewProd({...newProd, name: e.target.value})} placeholder="Nombre" className="md:col-span-2 bg-black/50 border border-white/10 p-3 rounded text-white text-sm" required />
+                                <input value={newProd.image} onChange={e=>setNewProd({...newProd, image: e.target.value})} placeholder="URL Img" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm" />
+                                <input type="number" value={newProd.price} onChange={e=>setNewProd({...newProd, price: e.target.value})} placeholder="Precio" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm" required />
+                                <select value={newProd.category} onChange={e=>setNewProd({...newProd, category: e.target.value})} className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm"><option>Hardware</option><option>Software</option><option>Servicios</option></select>
+                                <button className="bg-brand-success text-black border border-brand-success px-4 h-11 md:h-9 rounded text-xs font-bold w-full">GUARDAR</button>
                             </form>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -662,7 +685,7 @@
                                     <i className="fas fa-fingerprint text-4xl text-black transform -rotate-45"></i>
                                 </div>
                                 <h1 className="font-serif text-3xl text-white tracking-wide">LUMOS <span className="text-brand-gold">ELITE</span></h1>
-                                <p className="text-brand-muted text-[10px] uppercase tracking-[0.3em] mt-2">Acceso Seguro v12.0</p>
+                                <p className="text-brand-muted text-[10px] uppercase tracking-[0.3em] mt-2">Acceso Seguro v13.0</p>
                             </div>
                             {error && <div className="mb-6 p-3 bg-red-900/20 border-l-2 border-red-500 text-red-200 text-xs flex items-center gap-2 animate-pulse"><i className="fas fa-exclamation-circle"></i> {error}</div>}
                             <form onSubmit={handleSubmit} className="space-y-6" onKeyUp={handleKey}>
