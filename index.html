@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>LUMOS ELITE | Management Suite</title>
+    <title>LUMOS ELITE | Commerce Suite</title>
     
     <!-- PWA Settings -->
     <meta name="theme-color" content="#000000">
@@ -41,7 +41,8 @@
                             muted: '#525252',
                             danger: '#ef4444',
                             success: '#10b981',
-                            accent: '#3b82f6'
+                            accent: '#3b82f6',
+                            warning: '#f59e0b'
                         }
                     },
                     fontFamily: {
@@ -62,6 +63,10 @@
         input, select, button, textarea { touch-action: manipulation; }
         @media (max-width: 768px) { .glass-panel { padding: 0.75rem; border-radius: 0.75rem; } h1 { font-size: 1.25rem; } input, button { font-size: 1rem; } }
         #loader-overlay { position: fixed; inset: 0; z-index: 9999; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        /* Toast Animation */
+        @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .toast { animation: slideInUp 0.3s ease-out forwards; }
     </style>
 </head>
 <body>
@@ -118,7 +123,13 @@
                     if(!timestamp) return '...';
                     return new Date(timestamp.seconds * 1000).toLocaleDateString("es-MX", { day: 'numeric', month: 'short', year:'numeric', hour: '2-digit', minute:'2-digit' });
                 },
-                cleanUsername: (email) => email ? email.replace(HIDDEN_DOMAIN, '') : ''
+                cleanUsername: (email) => email ? email.replace(HIDDEN_DOMAIN, '') : '',
+                isLate: (timestamp, status) => {
+                    if (!timestamp || status === 'Entregado' || status === 'Cancelado') return false;
+                    const diffTime = Math.abs(new Date() - new Date(timestamp.seconds * 1000));
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                    return diffDays > 3;
+                }
             };
 
             const Loader = () => <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50"><div className="w-8 h-8 border-t-2 border-brand-gold rounded-full animate-spin"></div></div>;
@@ -185,6 +196,11 @@
 
                 const totalRev = orders.reduce((acc, o) => acc + (o.total || 0), 0);
                 const avgTicket = orders.length ? totalRev / orders.length : 0;
+                
+                // KPIs Logísticos
+                const delivered = orders.filter(o => o.status === 'Entregado').length;
+                const delayed = orders.filter(o => Security.isLate(o.createdAt, o.status)).length;
+                const deliveryRate = orders.length ? (delivered / orders.length) * 100 : 0;
 
                 React.useEffect(() => {
                     if(!chartRef.current || !orders.length) return;
@@ -206,20 +222,33 @@
                     });
                 }, [orders]);
 
-                return (
-                    <div className="space-y-3 animate-fade-in">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                            <div className="glass-panel p-3 rounded-lg border-l-2 border-brand-gold"><p className="text-[10px] text-gray-400">VENTAS</p><h3 className="text-lg text-white font-serif">{Security.formatMoney(totalRev)}</h3></div>
-                            <div className="glass-panel p-3 rounded-lg border-l-2 border-blue-500"><p className="text-[10px] text-gray-400">PEDIDOS</p><h3 className="text-lg text-white font-serif">{orders.length}</h3></div>
-                            <div className="glass-panel p-3 rounded-lg border-l-2 border-purple-500"><p className="text-[10px] text-gray-400">PROMEDIO</p><h3 className="text-lg text-white font-serif">{Security.formatMoney(avgTicket)}</h3></div>
-                            <div className="glass-panel p-3 rounded-lg border-l-2 border-green-500"><p className="text-[10px] text-gray-400">USUARIOS</p><h3 className="text-lg text-white font-serif">{users.length}</h3></div>
+                const Kpi = ({ title, val, icon, color, sub }) => (
+                    <div className="glass-panel p-3 rounded-lg border-l-2 border-brand-gold relative overflow-hidden flex flex-col justify-between">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <p className="text-[10px] text-gray-400 uppercase tracking-wider">{title}</p>
+                                <h3 className={`text-lg font-serif mt-1 ${color}`}>{val}</h3>
+                            </div>
+                            <div className={`p-1.5 rounded bg-white/5 ${color}`}><i className={`fas ${icon}`}></i></div>
                         </div>
-                        <div className="glass-panel p-3 rounded-lg h-48"><canvas ref={chartRef}></canvas></div>
+                        {sub && <p className="text-[9px] text-gray-500 mt-2">{sub}</p>}
+                    </div>
+                );
+
+                return (
+                    <div className="space-y-4 animate-fade-in">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <Kpi title="Ingresos" val={Security.formatMoney(totalRev)} icon="fa-sack-dollar" color="text-brand-gold" />
+                            <Kpi title="Pedidos" val={orders.length} icon="fa-box" color="text-blue-400" />
+                            <Kpi title="Tasa Entrega" val={`${deliveryRate.toFixed(0)}%`} icon="fa-truck-fast" color="text-green-400" sub={`${delivered} completados`} />
+                            <Kpi title="Retrasos" val={delayed} icon="fa-clock" color="text-red-400" sub="> 3 días pendientes" />
+                        </div>
+                        <div className="glass-panel p-4 rounded-lg h-64"><canvas ref={chartRef}></canvas></div>
                     </div>
                 );
             };
 
-            // --- ADMIN: MONITOR Y EDICIÓN DE PEDIDOS ---
+            // --- ADMIN: MONITOR Y EDICIÓN ---
             const AdminOrderMonitor = () => {
                 const [orders, setOrders] = React.useState([]);
                 const [selectedOrder, setSelectedOrder] = React.useState(null); 
@@ -240,7 +269,7 @@
                 const updateStatus = async (id, newStatus) => { try { await updateDoc(doc(db, "orders", id), { status: newStatus }); } catch(e) { alert("Error: " + e.message); } };
                 const deleteOrder = async (id) => { if(confirm("¿Eliminar permanentemente?")) try { await deleteDoc(doc(db, "orders", id)); } catch(e) { alert("Error: " + e.message); } };
 
-                // Funciones de Edición de Pedido
+                // Funciones de Edición
                 const handleEditQty = (idx, delta) => {
                     const newItems = [...selectedOrder.items];
                     newItems[idx].qty += delta;
@@ -248,15 +277,12 @@
                     const newTotal = newItems.reduce((a,b) => a + (b.price * b.qty), 0);
                     setSelectedOrder({...selectedOrder, items: newItems, total: newTotal});
                 };
-
                 const handleRemoveItem = (idx) => {
                     if(!confirm("¿Quitar producto?")) return;
-                    const newItems = [...selectedOrder.items];
-                    newItems.splice(idx, 1);
+                    const newItems = [...selectedOrder.items]; newItems.splice(idx, 1);
                     const newTotal = newItems.reduce((a,b) => a + (b.price * b.qty), 0);
                     setSelectedOrder({...selectedOrder, items: newItems, total: newTotal});
                 };
-
                 const handleAddItem = (prodId) => {
                     if(!prodId) return;
                     const product = inventory.find(p => p.id === prodId);
@@ -264,133 +290,98 @@
                     const newTotal = newItems.reduce((a,b) => a + (b.price * b.qty), 0);
                     setSelectedOrder({...selectedOrder, items: newItems, total: newTotal});
                 };
-
                 const saveOrderChanges = async () => {
                     try {
                         await updateDoc(doc(db, "orders", selectedOrder.id), {
-                            items: selectedOrder.items,
-                            total: selectedOrder.total,
-                            comments: selectedOrder.comments || "",
-                            deliveryInstructions: selectedOrder.deliveryInstructions || ""
+                            items: selectedOrder.items, total: selectedOrder.total, comments: selectedOrder.comments || "", deliveryInstructions: selectedOrder.deliveryInstructions || ""
                         });
-                        alert("Pedido actualizado.");
-                        setEditMode(false);
-                    } catch(e) { alert("Error al guardar: " + e.message); }
+                        alert("Pedido actualizado."); setEditMode(false);
+                    } catch(e) { alert("Error: " + e.message); }
                 };
 
                 return (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {selectedOrder && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => {setSelectedOrder(null); setEditMode(false);}}>
                                 <div className="bg-brand-surface border border-white/10 p-5 rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col animate-slide-up" onClick={e => e.stopPropagation()}>
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="text-white text-lg font-serif">Pedido: {selectedOrder.folio}</h3>
                                         <div className="flex gap-2">
-                                            <button onClick={() => setEditMode(!editMode)} className={`text-xs px-3 py-1 rounded ${editMode ? 'bg-brand-gold text-black' : 'bg-white/10 text-white'}`}>{editMode ? 'Editando' : 'Editar'}</button>
+                                            <button onClick={() => setEditMode(!editMode)} className={`text-xs px-3 py-1 rounded ${editMode ? 'bg-brand-gold text-black' : 'bg-white/10 text-white'}`}>{editMode ? 'Guardar' : 'Editar'}</button>
                                             <button onClick={() => {setSelectedOrder(null); setEditMode(false);}} className="text-gray-400 p-1"><i className="fas fa-times text-lg"></i></button>
                                         </div>
                                     </div>
-                                    
                                     <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-                                        {/* Items */}
                                         <div className="space-y-2">
                                             {selectedOrder.items.map((item, idx) => (
                                                 <div key={idx} className="flex justify-between items-center text-sm border-b border-white/5 py-2">
-                                                    <div className="flex-1">
-                                                        <span className="text-gray-300 block">{item.name}</span>
-                                                        <span className="text-brand-gold text-xs">{Security.formatMoney(item.price)}</span>
-                                                    </div>
+                                                    <div className="flex-1"><span className="text-gray-300 block">{item.name}</span><span className="text-brand-gold text-xs">{Security.formatMoney(item.price)}</span></div>
                                                     <div className="flex items-center gap-3">
                                                         {editMode ? (
-                                                            <>
-                                                                <button onClick={()=>handleEditQty(idx, -1)} className="w-6 h-6 bg-white/10 rounded text-white">-</button>
-                                                                <span className="text-white w-4 text-center">{item.qty}</span>
-                                                                <button onClick={()=>handleEditQty(idx, 1)} className="w-6 h-6 bg-white/10 rounded text-white">+</button>
-                                                                <button onClick={()=>handleRemoveItem(idx)} className="text-red-500 ml-2"><i className="fas fa-trash"></i></button>
-                                                            </>
-                                                        ) : (
-                                                            <span className="text-white font-bold">x{item.qty}</span>
-                                                        )}
+                                                            <><button onClick={()=>handleEditQty(idx, -1)} className="w-6 h-6 bg-white/10 rounded text-white">-</button><span className="text-white w-4 text-center">{item.qty}</span><button onClick={()=>handleEditQty(idx, 1)} className="w-6 h-6 bg-white/10 rounded text-white">+</button><button onClick={()=>handleRemoveItem(idx)} className="text-red-500 ml-2"><i className="fas fa-trash"></i></button></>
+                                                        ) : <span className="text-white font-bold">x{item.qty}</span>}
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
-
-                                        {editMode && (
-                                            <div className="pt-2">
-                                                <select onChange={(e) => { handleAddItem(e.target.value); e.target.value = ""; }} className="w-full bg-black/50 border border-white/10 p-2 rounded text-white text-sm">
-                                                    <option value="">+ Agregar Producto</option>
-                                                    {inventory.map(p => <option key={p.id} value={p.id}>{p.name} - {Security.formatMoney(p.price)}</option>)}
-                                                </select>
-                                            </div>
-                                        )}
-
-                                        {/* Comentarios y Entrega */}
+                                        {editMode && <div className="pt-2"><select onChange={(e) => { handleAddItem(e.target.value); e.target.value = ""; }} className="w-full bg-black/50 border border-white/10 p-2 rounded text-white text-sm"><option value="">+ Agregar Producto</option>{inventory.map(p => <option key={p.id} value={p.id}>{p.name} - {Security.formatMoney(p.price)}</option>)}</select></div>}
                                         <div className="space-y-2">
-                                            <label className="text-xs text-brand-gold uppercase">Notas del Pedido</label>
-                                            <textarea 
-                                                disabled={!editMode}
-                                                value={selectedOrder.comments || ''}
-                                                onChange={e => setSelectedOrder({...selectedOrder, comments: e.target.value})}
-                                                className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm disabled:opacity-50"
-                                                rows="2"
-                                            ></textarea>
-                                            <label className="text-xs text-brand-gold uppercase">Indicaciones de Entrega</label>
-                                            <textarea 
-                                                disabled={!editMode}
-                                                value={selectedOrder.deliveryInstructions || ''}
-                                                onChange={e => setSelectedOrder({...selectedOrder, deliveryInstructions: e.target.value})}
-                                                className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm disabled:opacity-50"
-                                                rows="2"
-                                            ></textarea>
+                                            <label className="text-xs text-brand-gold uppercase">Notas</label>
+                                            <textarea disabled={!editMode} value={selectedOrder.comments||''} onChange={e=>setSelectedOrder({...selectedOrder, comments:e.target.value})} className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm disabled:opacity-50" rows="2"></textarea>
+                                            <label className="text-xs text-brand-gold uppercase">Entrega</label>
+                                            <textarea disabled={!editMode} value={selectedOrder.deliveryInstructions||''} onChange={e=>setSelectedOrder({...selectedOrder, deliveryInstructions:e.target.value})} className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm disabled:opacity-50" rows="2"></textarea>
                                         </div>
                                     </div>
-
                                     <div className="pt-4 border-t border-white/20 mt-2">
-                                        <div className="flex justify-between text-xl font-serif text-white mb-4">
-                                            <span>Total</span>
-                                            <span>{Security.formatMoney(selectedOrder.total)}</span>
-                                        </div>
+                                        <div className="flex justify-between text-xl font-serif text-white mb-2"><span>Total</span><span>{Security.formatMoney(selectedOrder.total)}</span></div>
                                         {editMode && <button onClick={saveOrderChanges} className="w-full bg-brand-success text-black py-3 rounded font-bold text-sm">GUARDAR CAMBIOS</button>}
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        <div className="glass-panel rounded-xl overflow-hidden overflow-x-auto">
+                        <div className="md:hidden space-y-3">
+                             {orders.map(o => {
+                                 const isLate = Security.isLate(o.createdAt, o.status);
+                                 return (
+                                    <div key={o.id} className={`glass-panel p-4 rounded-lg flex flex-col gap-3 ${isLate ? 'border-l-4 border-red-500' : ''}`}>
+                                        <div className="flex justify-between">
+                                            <div><span className="text-brand-gold font-mono font-bold">{o.folio}</span><div className="text-white text-sm">{o.username}</div>{isLate && <span className="text-[10px] bg-red-900 text-white px-1 rounded">RETRASADO</span>}</div>
+                                            <div className="text-right"><div className="text-white font-serif">{Security.formatMoney(o.total)}</div><div className="text-xs text-gray-500">{Security.formatDate(o.createdAt)}</div></div>
+                                        </div>
+                                        <div className="flex gap-2 items-center">
+                                            <select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`flex-1 bg-black/40 border border-white/10 rounded px-2 py-2 text-xs outline-none ${o.status==='Pendiente'?'text-yellow-500':'text-green-500'}`}><option>Pendiente</option><option>Enviado</option><option>Entregado</option><option>Cancelado</option></select>
+                                            <button onClick={()=>{setSelectedOrder(o); setEditMode(false);}} className="p-2 bg-blue-500/20 text-blue-400 rounded"><i className="fas fa-eye"></i></button>
+                                            <button onClick={()=>{setSelectedOrder(o); setEditMode(true);}} className="p-2 bg-brand-gold/20 text-brand-gold rounded"><i className="fas fa-edit"></i></button>
+                                            <button onClick={()=>handleDeleteOrder(o.id)} className="p-2 bg-red-500/20 text-red-400 rounded"><i className="fas fa-trash"></i></button>
+                                        </div>
+                                    </div>
+                                 );
+                             })}
+                        </div>
+                        
+                        <div className="hidden md:block glass-panel rounded-xl overflow-hidden overflow-x-auto">
                             <table className="w-full text-left text-sm text-gray-400 min-w-[600px]">
                                 <thead className="bg-white/5 text-white uppercase text-xs"><tr><th className="p-4">Folio</th><th className="p-4">Cliente</th><th className="p-4">Total</th><th className="p-4">Estado</th><th className="p-4 text-right">Acciones</th></tr></thead>
                                 <tbody className="divide-y divide-white/5">
-                                    {orders.map(o => (
-                                        <tr key={o.id} className="hover:bg-white/5">
-                                            <td className="p-4 font-mono text-brand-gold">{o.folio || '---'}</td>
-                                            <td className="p-4 text-white uppercase">{o.username}</td>
-                                            <td className="p-4">{Security.formatMoney(o.total)}</td>
-                                            <td className="p-4"><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`bg-transparent border border-white/20 rounded px-2 py-1 text-xs outline-none cursor-pointer ${o.status==='Pendiente'?'text-yellow-500':'text-green-500'}`}><option value="Pendiente">Pendiente</option><option value="Enviado">Enviado</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select></td>
-                                            <td className="p-4 text-right flex justify-end gap-2">
-                                                <button onClick={()=>{setSelectedOrder(o); setEditMode(false);}} className="text-blue-400 hover:bg-white/10 p-2 rounded" title="Ver/Editar"><i className="fas fa-edit"></i></button>
-                                                <button onClick={()=>handleDeleteOrder(o.id)} className="text-red-500 hover:bg-white/10 p-2 rounded" title="Eliminar"><i className="fas fa-trash"></i></button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {orders.map(o => {
+                                        const isLate = Security.isLate(o.createdAt, o.status);
+                                        return (
+                                            <tr key={o.id} className={`hover:bg-white/5 ${isLate ? 'bg-red-900/10' : ''}`}>
+                                                <td className="p-4 font-mono text-brand-gold">{o.folio} {isLate && <i className="fas fa-exclamation-circle text-red-500 ml-2" title="Retrasado"></i>}</td>
+                                                <td className="p-4 text-white uppercase">{o.username}</td>
+                                                <td className="p-4">{Security.formatMoney(o.total)}</td>
+                                                <td className="p-4"><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`bg-transparent border border-white/20 rounded px-2 py-1 text-xs outline-none cursor-pointer ${o.status==='Pendiente'?'text-yellow-500':'text-green-500'}`}><option>Pendiente</option><option>Enviado</option><option>Entregado</option><option>Cancelado</option></select></td>
+                                                <td className="p-4 text-right flex justify-end gap-2">
+                                                    <button onClick={()=>{setSelectedOrder(o); setEditMode(false);}} className="text-blue-400 hover:bg-white/10 p-2 rounded" title="Ver Detalles"><i className="fas fa-eye"></i></button>
+                                                    <button onClick={()=>{setSelectedOrder(o); setEditMode(true);}} className="text-brand-gold hover:bg-white/10 p-2 rounded" title="Editar"><i className="fas fa-edit"></i></button>
+                                                    <button onClick={()=>handleDeleteOrder(o.id)} className="text-red-500 hover:bg-white/10 p-2 rounded" title="Eliminar"><i className="fas fa-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
-                        </div>
-                        {/* Vista Movil de lista de ordenes para admin */}
-                        <div className="md:hidden space-y-3">
-                             {orders.map(o => (
-                                <div key={o.id} className="glass-panel p-4 rounded-lg flex flex-col gap-3">
-                                    <div className="flex justify-between">
-                                        <div><span className="text-brand-gold font-mono font-bold">{o.folio}</span><div className="text-white text-sm">{o.username}</div></div>
-                                        <div className="text-right"><div className="text-white font-serif">{Security.formatMoney(o.total)}</div><div className="text-xs text-gray-500">{Security.formatDate(o.createdAt)}</div></div>
-                                    </div>
-                                    <div className="flex gap-2 items-center">
-                                        <select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`flex-1 bg-black/40 border border-white/10 rounded px-2 py-2 text-xs outline-none ${o.status==='Pendiente'?'text-yellow-500':'text-green-500'}`}><option>Pendiente</option><option>Enviado</option><option>Entregado</option><option>Cancelado</option></select>
-                                        <button onClick={()=>{setSelectedOrder(o); setEditMode(false);}} className="p-2 bg-blue-500/20 text-blue-400 rounded"><i className="fas fa-edit"></i></button>
-                                        <button onClick={()=>handleDeleteOrder(o.id)} className="p-2 bg-red-500/20 text-red-400 rounded"><i className="fas fa-trash"></i></button>
-                                    </div>
-                                </div>
-                             ))}
                         </div>
                     </div>
                 );
@@ -427,177 +418,40 @@
                 );
             };
 
-            // --- GESTIÓN DE USUARIOS ---
-            const UserManager = () => {
-                const [users, setUsers] = React.useState([]);
-                const [newKey, setNewKey] = React.useState('');
-                const [newPass, setNewPass] = React.useState('');
-                const [creating, setCreating] = React.useState(false);
-                const [editingUser, setEditingUser] = React.useState(null);
-
-                React.useEffect(() => onSnapshot(collection(db, 'users'), (s) => setUsers(s.docs.map(d => ({id: d.id, ...d.data()})))), []);
-
-                const createUser = async (e) => {
-                    e.preventDefault(); setCreating(true);
-                    let app2; try { 
-                        const email = newKey.trim() + HIDDEN_DOMAIN;
-                        app2 = initializeApp(firebaseConfig, "SecondaryApp"); 
-                        const u = await createUserWithEmailAndPassword(getAuth(app2), email, newPass); 
-                        await setDoc(doc(db, 'users', u.user.uid), { username: newKey, email, role: 'client', status: 'active', createdAt: serverTimestamp() }); 
-                        alert("Usuario creado correctamente."); setNewKey(''); setNewPass(''); 
-                    } catch(e) { alert(e.message); } finally { if(app2) deleteApp(app2); setCreating(false); }
-                };
-
-                const saveEdit = async () => {
-                    if(!editingUser) return;
-                    try { await updateDoc(doc(db, 'users', editingUser.id), { username: editingUser.username, role: editingUser.role }); setEditingUser(null); } 
-                    catch(e) { alert(e.message); }
-                };
-
-                const toggleStatus = async (uid, currentStatus) => {
-                    if(confirm("¿Cambiar estado?")) await updateDoc(doc(db, 'users', uid), { status: currentStatus === 'active' ? 'suspended' : 'active' });
-                };
-                const resetDevice = async (uid) => {
-                    if(confirm("¿Resetear dispositivo?")) await updateDoc(doc(db, 'users', uid), { registeredDeviceId: null });
-                };
-                const deleteUser = async (uid) => {
-                    if(confirm("⚠️ ¿ELIMINAR USUARIO?")) await deleteDoc(doc(db, 'users', uid));
-                };
-
-                return (
-                    <div className="space-y-4">
-                        <div className="glass-panel p-4 rounded-lg border-t-2 border-brand-gold">
-                            <form onSubmit={createUser} className="flex flex-col gap-2">
-                                <div className="flex gap-2">
-                                    <input value={newKey} onChange={e=>setNewKey(e.target.value)} placeholder="USUARIO" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1 font-mono" required />
-                                    <input value={newPass} onChange={e=>setNewPass(e.target.value)} placeholder="CLAVE" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1" required />
-                                </div>
-                                <button disabled={creating} className="bg-brand-gold text-black p-3 rounded text-xs font-bold w-full uppercase">CREAR USUARIO</button>
-                            </form>
-                        </div>
-
-                        {editingUser && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
-                                <div className="bg-brand-surface border border-white/10 p-5 rounded-xl w-full max-w-sm animate-slide-up">
-                                    <h3 className="text-white text-lg mb-4 font-serif">Editar Usuario</h3>
-                                    <input value={editingUser.username} onChange={e=>setEditingUser({...editingUser, username: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 rounded text-white mb-3 text-base"/>
-                                    <select value={editingUser.role} onChange={e=>setEditingUser({...editingUser, role: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 rounded text-white mb-4 text-base"><option value="client">Cliente</option><option value="admin">Administrador</option></select>
-                                    <div className="flex gap-2"><button onClick={saveEdit} className="flex-1 bg-brand-success text-black py-3 rounded font-bold text-sm">GUARDAR</button><button onClick={()=>setEditingUser(null)} className="flex-1 border border-white/20 text-white py-3 rounded text-sm">CANCELAR</button></div>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="grid gap-3">
-                            {users.map(u => {
-                                const isMaster = Security.cleanUsername(u.email) === MASTER_KEY;
-                                const displayUsername = u.username || Security.cleanUsername(u.email);
-                                
-                                return (
-                                    <div key={u.id} className="glass-panel p-4 rounded-lg flex flex-col gap-2">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <div className="text-white font-mono font-bold">{displayUsername} {isMaster && <i className="fas fa-crown text-brand-gold text-xs"></i>}</div>
-                                                <div className="flex gap-2 mt-1">
-                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${u.role==='admin'?'border-purple-500 text-purple-400':'border-blue-500 text-blue-400'}`}>{u.role}</span>
-                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${u.status==='active'?'border-green-500 text-green-400':'border-red-500 text-red-400'}`}>{u.status}</span>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-[9px] text-gray-500 uppercase">DISPOSITIVO</div>
-                                                <div className="text-xs text-brand-gold font-mono">{u.registeredDeviceId ? '...'+u.registeredDeviceId.slice(-6) : '---'}</div>
-                                            </div>
-                                        </div>
-                                        {!isMaster && (
-                                            <div className="grid grid-cols-4 gap-2 border-t border-white/10 pt-2">
-                                                <button onClick={()=>setEditingUser(u)} className="p-2 bg-white/5 rounded text-white flex justify-center"><i className="fas fa-pen text-xs"></i></button>
-                                                <button onClick={()=>toggleStatus(u.id, u.status)} className="p-2 bg-white/5 rounded text-white flex justify-center"><i className="fas fa-power-off text-xs"></i></button>
-                                                <button onClick={()=>resetDevice(u.id)} className="p-2 bg-white/5 rounded text-white flex justify-center"><i className="fas fa-mobile-alt text-xs"></i></button>
-                                                <button onClick={()=>deleteUser(u.id)} className="p-2 bg-red-900/20 text-brand-danger rounded flex justify-center"><i className="fas fa-trash text-xs"></i></button>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                );
-            };
-
-            // --- PRODUCT MANAGER ---
-            const ProductManager = () => {
-                const [products, setProducts] = React.useState([]);
-                const [newProd, setNewProd] = React.useState({ name: '', price: '', category: 'Hardware', image: '', stock: 1 });
-                const fileInputRef = React.useRef();
-
-                React.useEffect(() => onSnapshot(collection(db, 'products'), (s) => setProducts(s.docs.map(d => ({id: d.id, ...d.data()})))), []);
-                
-                const add = async (e) => { e.preventDefault(); await addDoc(collection(db, 'products'), { ...newProd, price: Number(newProd.price), stock: Number(newProd.stock), createdAt: serverTimestamp() }); setNewProd({ name: '', price: '', category: 'Hardware', image: '', stock: 1 }); };
-                const handleBulkUpload = (e) => {
-                    const f = e.target.files[0]; if (!f) return;
-                    const r = new FileReader(); r.onload = async (evt) => {
-                        const rows = evt.target.result.split('\n').slice(1);
-                        let c = 0; for (let row of rows) { const [n, p, cat, img, s] = row.split(','); if (n && p) { await addDoc(collection(db, 'products'), { name: n.trim(), price: Number(p), category: cat?.trim()||'G', image: img?.trim()||'', stock: Number(s)||1, createdAt: serverTimestamp() }); c++; } }
-                        alert(`Cargados: ${c}`); e.target.value = null;
-                    }; r.readAsText(f);
-                };
-                
-                return (
-                    <div className="space-y-4">
-                        <div className="glass-panel p-4 rounded-lg border-t border-brand-success flex justify-between items-center">
-                            <h3 className="text-xs text-brand-success font-bold uppercase">Inventario</h3>
-                            <label className="bg-brand-success/10 text-brand-success border border-brand-success px-3 py-1.5 rounded text-xs cursor-pointer"><i className="fas fa-upload mr-1"></i> CSV<input type="file" accept=".csv" className="hidden" ref={fileInputRef} onChange={handleBulkUpload} /></label>
-                        </div>
-                        <div className="glass-panel p-4 rounded-lg">
-                            <form onSubmit={add} className="flex flex-col gap-2">
-                                <input value={newProd.name} onChange={e=>setNewProd({...newProd, name: e.target.value})} placeholder="Nombre Producto" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm" required />
-                                <div className="flex gap-2">
-                                    <input type="number" value={newProd.price} onChange={e=>setNewProd({...newProd, price: e.target.value})} placeholder="Price" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1" required />
-                                    <select value={newProd.category} onChange={e=>setNewProd({...newProd, category: e.target.value})} className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1"><option>Hardware</option><option>Software</option><option>Servicios</option></select>
-                                </div>
-                                <input value={newProd.image} onChange={e=>setNewProd({...newProd, image: e.target.value})} placeholder="URL Imagen (Opcional)" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm" />
-                                <button className="bg-brand-success text-black border border-brand-success p-3 rounded text-xs font-bold uppercase">AGREGAR</button>
-                            </form>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            {products.map(p => (
-                                <div key={p.id} className="glass-panel p-3 rounded relative group">
-                                    <button onClick={()=>deleteDoc(doc(db,'products',p.id))} className="absolute top-1 right-1 z-10 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-70 hover:opacity-100"><i className="fas fa-times text-xs"></i></button>
-                                    <div className="h-20 bg-black/50 rounded mb-2 overflow-hidden"><img src={p.image} className="w-full h-full object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/150'} /></div>
-                                    <div className="text-white text-xs truncate font-bold">{p.name}</div>
-                                    <div className="text-brand-gold text-xs font-mono">{Security.formatMoney(p.price)}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-            };
-
-            // --- APP MAIN ---
+            // --- APP MAIN (Navegación Adaptativa) ---
             const StoreApp = ({ user, role, onLogout }) => {
                 const [view, setView] = React.useState(role === 'admin' ? 'dashboard' : 'store'); 
                 const [cart, setCart] = React.useState([]);
                 const [cartOpen, setCartOpen] = React.useState(false);
                 const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-                const { isInstallable, install } = usePWAInstall();
-                const username = Security.cleanUsername(user.email);
                 const [products, setProducts] = React.useState([]);
+                const [toast, setToast] = React.useState(null); // Nuevo estado para Toast
+
+                // Campos de Checkout
                 const [orderComments, setOrderComments] = React.useState('');
                 const [deliveryInstr, setDeliveryInstr] = React.useState('');
 
+                const username = Security.cleanUsername(user.email);
+
                 React.useEffect(() => onSnapshot(collection(db, 'products'), s => setProducts(s.docs.map(d => ({id:d.id, ...d.data()})))), []);
 
-                // Nueva lógica de carrito con cantidades
-                const addToCart = (p) => { 
+                // Nueva lógica: Cantidad en tarjeta y Toast
+                const addToCart = (p, qty) => { 
                     const existing = cart.find(i => i.id === p.id);
                     if(existing) {
-                        setCart(cart.map(i => i.id === p.id ? {...i, qty: (i.qty || 1) + 1} : i));
+                        setCart(cart.map(i => i.id === p.id ? {...i, qty: (i.qty || 1) + qty} : i));
                     } else {
-                        setCart([...cart, {...p, qty: 1}]);
+                        setCart([...cart, {...p, qty: qty}]);
                     }
-                    setCartOpen(true); 
+                    showToast(`Agregado: ${qty}x ${p.name}`);
                 };
 
-                const updateQty = (idx, delta) => {
+                const showToast = (msg) => {
+                    setToast(msg);
+                    setTimeout(() => setToast(null), 3000);
+                };
+
+                const updateCartQty = (idx, delta) => {
                     const newCart = [...cart];
                     newCart[idx].qty += delta;
                     if(newCart[idx].qty < 1) newCart.splice(idx, 1);
@@ -615,24 +469,40 @@
                             const folio = `${cfg.prefix}-${cfg.nextIndex}`;
                             t.set(folioRef, { ...cfg, nextIndex: Number(cfg.nextIndex) + 1 });
                             const orderData = { 
-                                userId: user.uid, 
-                                username, 
-                                items: cart, 
-                                total, 
-                                status: 'Pendiente', 
-                                createdAt: serverTimestamp(), 
-                                deviceId: Security.getDeviceId(), 
-                                folio,
-                                comments: orderComments,
-                                deliveryInstructions: deliveryInstr
+                                userId: user.uid, username, items: cart, total, status: 'Pendiente', 
+                                createdAt: serverTimestamp(), deviceId: Security.getDeviceId(), folio,
+                                comments: orderComments, deliveryInstructions: deliveryInstr
                             };
                             t.set(doc(collection(db, "orders")), orderData);
                         });
-                        if(confirm("✅ Pedido completado.\n\n¿Descargar ticket PDF?")) {
+                        if(confirm("✅ Pedido Confirmado.\n\n¿Descargar ticket PDF?")) {
                             generatePDF({ folio: 'NUEVO', username, items: cart, total, createdAt: {seconds: Date.now()/1000} }); 
                         }
                         setCart([]); setCartOpen(false); setOrderComments(''); setDeliveryInstr('');
                     } catch (e) { alert("Error: " + e.message); }
+                };
+
+                // Componente Tarjeta de Producto con Selector
+                const ProductCard = ({ p }) => {
+                    const [qty, setQty] = React.useState(1);
+                    return (
+                        <div className="glass-panel rounded-xl overflow-hidden group flex flex-col">
+                            <div className="aspect-square w-full relative bg-black/50">
+                                <img src={p.image} className="w-full h-full object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/300?text=IMG'}/>
+                                <div className="absolute top-1 left-1 bg-black/70 px-1.5 py-0.5 text-[8px] text-white rounded">{p.category.substring(0,10)}</div>
+                            </div>
+                            <div className="p-3 flex-1 flex flex-col">
+                                <h3 className="text-white font-medium text-sm leading-tight mb-2 line-clamp-2 flex-1">{p.name}</h3>
+                                <div className="text-brand-gold text-sm font-serif mb-2">{Security.formatMoney(p.price)}</div>
+                                <div className="flex items-center justify-between mt-auto bg-black/30 rounded-lg p-1">
+                                    <button onClick={()=>setQty(Math.max(1, qty-1))} className="w-8 h-8 text-white hover:text-brand-gold">-</button>
+                                    <span className="text-white text-sm font-bold w-4 text-center">{qty}</span>
+                                    <button onClick={()=>setQty(qty+1)} className="w-8 h-8 text-white hover:text-brand-gold">+</button>
+                                    <button onClick={()=>{addToCart(p, qty); setQty(1);}} className="bg-brand-gold text-black px-3 py-1 rounded text-xs font-bold ml-2">AGREGAR</button>
+                                </div>
+                            </div>
+                        </div>
+                    );
                 };
 
                 const MenuItem = ({ icon, label, target }) => (
@@ -643,16 +513,20 @@
 
                 return (
                     <div className="min-h-screen bg-brand-dark flex flex-col md:flex-row pb-20 md:pb-0">
-                        {/* SIDEBAR DESKTOP */}
-                        <aside className="hidden md:flex flex-col w-64 glass-panel border-r border-white/5 h-screen sticky top-0 z-30 p-4">
-                            <div className="flex justify-between items-center mb-6 px-2">
-                                <h2 className="font-serif text-2xl text-white tracking-widest"><i className="fas fa-fingerprint text-brand-gold mr-2"></i> LUMOS</h2>
-                                <button onClick={onLogout} className="text-red-400 hover:text-white p-2" title="Salir"><i className="fas fa-sign-out-alt"></i></button>
+                        {/* TOAST NOTIFICATION */}
+                        {toast && (
+                            <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[100] bg-brand-success text-black px-4 py-2 rounded-full shadow-xl font-bold text-sm toast">
+                                <i className="fas fa-check-circle mr-2"></i> {toast}
                             </div>
+                        )}
+
+                        {/* SIDEBAR & MENU (Igual que v20) */}
+                        <aside className="hidden md:flex flex-col w-64 glass-panel border-r border-white/5 h-screen sticky top-0 z-30 p-4">
+                            <div className="flex justify-between items-center mb-6 px-2"><h2 className="font-serif text-2xl text-white tracking-widest"><i className="fas fa-fingerprint text-brand-gold mr-2"></i> LUMOS</h2><button onClick={onLogout} className="text-red-400 hover:text-white p-2" title="Salir"><i className="fas fa-sign-out-alt"></i></button></div>
                             <div className="mb-4 px-2"><div className="text-xs text-brand-gold font-mono truncate border-b border-white/10 pb-2">{username}</div></div>
                             <div className="flex-1 space-y-1 overflow-y-auto">
                                 <MenuItem icon="fa-store" label="Catálogo" target="store" />
-                                <button onClick={()=>setCartOpen(true)} className="w-full text-left p-4 rounded-xl text-base mb-1 flex items-center gap-4 text-gray-400 hover:bg-white/5"><i className="fas fa-shopping-cart w-5 text-center"></i> Carrito ({cart.length})</button>
+                                <button onClick={()=>setCartOpen(true)} className="w-full text-left p-4 rounded-xl text-base mb-1 flex items-center gap-4 text-gray-400 hover:bg-white/5"><i className="fas fa-shopping-cart w-5 text-center"></i> Carrito ({cart.reduce((a,b)=>a+b.qty,0)})</button>
                                 <MenuItem icon="fa-clock" label="Mis Pedidos" target="orders" />
                                 {role === 'admin' && (
                                     <>
@@ -664,22 +538,13 @@
                                     </>
                                 )}
                             </div>
-                            {isInstallable && <button onClick={install} className="w-full bg-white/5 p-3 rounded-xl text-brand-gold text-xs mt-2"><i className="fas fa-download mr-2"></i> Instalar App</button>}
                         </aside>
 
-                        {/* MOBILE TOP BAR */}
                         <div className="md:hidden fixed top-0 left-0 right-0 glass-panel px-4 py-3 flex justify-between items-center z-40 bg-black/95 backdrop-blur border-b border-white/10 h-16">
-                            <div className="flex items-center gap-4">
-                                <button onClick={()=>setMobileMenuOpen(true)} className="text-white p-1"><i className="fas fa-bars text-xl"></i></button>
-                                <span className="font-serif text-brand-gold text-lg tracking-widest">LUMOS</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <button onClick={onLogout} className="text-red-400 p-1"><i className="fas fa-sign-out-alt text-lg"></i></button>
-                                <button onClick={()=>setCartOpen(true)} className="text-white relative p-1"><i className="fas fa-shopping-cart text-lg"></i>{cart.length>0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-brand-danger rounded-full text-[8px] flex items-center justify-center font-bold">{cart.length}</span>}</button>
-                            </div>
+                            <div className="flex items-center gap-4"><button onClick={()=>setMobileMenuOpen(true)} className="text-white p-1"><i className="fas fa-bars text-xl"></i></button><span className="font-serif text-brand-gold text-lg tracking-widest">LUMOS</span></div>
+                            <div className="flex items-center gap-3"><button onClick={onLogout} className="text-red-400 p-1"><i className="fas fa-sign-out-alt text-lg"></i></button><button onClick={()=>setCartOpen(true)} className="text-white relative p-1"><i className="fas fa-shopping-cart text-lg"></i>{cart.length>0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-brand-danger rounded-full text-[8px] flex items-center justify-center font-bold">{cart.length}</span>}</button></div>
                         </div>
 
-                        {/* MOBILE MENU */}
                         {mobileMenuOpen && (
                             <div className="fixed inset-0 z-50 md:hidden flex">
                                 <div className="fixed inset-0 bg-black/90 backdrop-blur-sm" onClick={()=>setMobileMenuOpen(false)}></div>
@@ -688,44 +553,19 @@
                                     <div className="flex-1 overflow-y-auto">
                                         <MenuItem icon="fa-store" label="Catálogo" target="store" />
                                         <MenuItem icon="fa-clock" label="Mis Pedidos" target="orders" />
-                                        {role === 'admin' && (
-                                            <>
-                                                <div className="py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest px-2 mt-2">Admin</div>
-                                                <MenuItem icon="fa-chart-pie" label="Dashboard" target="dashboard" />
-                                                <MenuItem icon="fa-list" label="Monitor" target="admin_orders" />
-                                                <MenuItem icon="fa-boxes" label="Inventario" target="inventory" />
-                                                <MenuItem icon="fa-users" label="Usuarios" target="users" />
-                                            </>
-                                        )}
+                                        {role === 'admin' && (<><div className="py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest px-2 mt-2">Admin</div><MenuItem icon="fa-chart-pie" label="Dashboard" target="dashboard" /><MenuItem icon="fa-list" label="Monitor" target="admin_orders" /><MenuItem icon="fa-boxes" label="Inventario" target="inventory" /><MenuItem icon="fa-users" label="Usuarios" target="users" /></>)}
                                     </div>
                                     <div className="text-xs text-brand-muted font-mono text-center pt-4">{username}</div>
                                 </div>
                             </div>
                         )}
 
-                        {/* MAIN CONTENT */}
                         <main className="flex-1 p-3 pt-20 md:p-8 md:pt-8 overflow-y-auto h-screen relative">
                             {view === 'store' && (
                                 <div className="animate-fade-in max-w-7xl mx-auto pb-24">
                                     <h1 className="text-xl md:text-3xl font-serif text-white mb-4">Catálogo</h1>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-                                        {products.map(p => (
-                                            <div key={p.id} className="glass-panel rounded-xl overflow-hidden group flex flex-col">
-                                                <div className="aspect-square w-full relative bg-black/50">
-                                                    <img src={p.image} className="w-full h-full object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/300?text=IMG'}/>
-                                                    <div className="absolute top-1 left-1 bg-black/70 px-1.5 py-0.5 text-[8px] text-white rounded">{p.category.substring(0,10)}</div>
-                                                </div>
-                                                <div className="p-3 flex-1 flex flex-col">
-                                                    <h3 className="text-white font-medium text-sm leading-tight mb-2 line-clamp-2 flex-1">{p.name}</h3>
-                                                    <div className="flex justify-between items-center mt-2">
-                                                        <span className="text-brand-gold text-sm font-serif">{Security.formatMoney(p.price)}</span>
-                                                        <div className="flex items-center gap-2">
-                                                            <button onClick={()=>addToCart(p)} className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center active:scale-90"><i className="fas fa-plus text-xs"></i></button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
+                                        {products.map(p => <ProductCard key={p.id} p={p} />)}
                                     </div>
                                 </div>
                             )}
@@ -742,7 +582,6 @@
                                 <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={()=>setCartOpen(false)}></div>
                                 <div className="relative w-full md:w-[450px] bg-brand-surface h-full shadow-2xl flex flex-col p-5 animate-slide-in overflow-hidden">
                                     <div className="flex justify-between items-center mb-6"><h2 className="font-serif text-white text-xl">Bolsa</h2><button onClick={()=>setCartOpen(false)} className="text-gray-400 p-2"><i className="fas fa-times text-xl"></i></button></div>
-                                    
                                     <div className="flex-1 overflow-y-auto space-y-3 pr-2">
                                         {cart.length === 0 ? <div className="flex flex-col items-center justify-center h-full text-brand-muted"><i className="fas fa-shopping-basket text-3xl mb-2"></i><p>Vacía.</p></div> : cart.map((item,i)=>(
                                             <div key={i} className="flex gap-3 p-3 glass-panel rounded-lg items-center">
@@ -750,22 +589,20 @@
                                                 <div className="flex-1 overflow-hidden">
                                                     <p className="text-white text-sm truncate">{item.name}</p>
                                                     <p className="text-brand-gold text-xs">{Security.formatMoney(item.price)} x {item.qty}</p>
+                                                    <p className="text-white text-xs font-bold">Sub: {Security.formatMoney(item.price * item.qty)}</p>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <button onClick={()=>updateQty(i, -1)} className="w-6 h-6 bg-white/10 rounded text-white text-xs">-</button>
+                                                    <button onClick={()=>updateCartQty(i, -1)} className="w-6 h-6 bg-white/10 rounded text-white text-xs">-</button>
                                                     <span className="text-white text-sm w-4 text-center">{item.qty}</span>
-                                                    <button onClick={()=>updateQty(i, 1)} className="w-6 h-6 bg-white/10 rounded text-white text-xs">+</button>
+                                                    <button onClick={()=>updateCartQty(i, 1)} className="w-6 h-6 bg-white/10 rounded text-white text-xs">+</button>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
-
-                                    {/* Campos Extra */}
                                     <div className="space-y-3 mt-4 border-t border-white/10 pt-4">
                                         <textarea placeholder="Indicaciones de Entrega" value={deliveryInstr} onChange={e=>setDeliveryInstr(e.target.value)} className="w-full bg-black/50 border border-white/10 p-3 rounded text-white text-sm h-16"></textarea>
                                         <textarea placeholder="Comentarios del Pedido" value={orderComments} onChange={e=>setOrderComments(e.target.value)} className="w-full bg-black/50 border border-white/10 p-3 rounded text-white text-sm h-16"></textarea>
                                     </div>
-
                                     <div className="mt-4 pt-4 border-t border-white/10">
                                         <div className="flex justify-between mb-4 items-end"><span className="text-gray-400 text-sm">Total</span><span className="text-brand-gold text-2xl font-serif">{Security.formatMoney(cart.reduce((a,b)=>a+(b.price*b.qty),0))}</span></div>
                                         <button onClick={checkout} disabled={cart.length===0} className="w-full bg-brand-gold text-black font-bold py-4 rounded-lg text-sm uppercase tracking-widest hover:bg-white transition disabled:opacity-50">Confirmar Pedido</button>
@@ -777,6 +614,51 @@
                 );
             };
 
+            // ... (UserManager, ProductManager y LoginScreen se mantienen igual que en v19, solo integrados en el HTML final) ...
+            // Re-insertando UserManager (Optimizado v21)
+            const UserManager = () => {
+                const [users, setUsers] = React.useState([]);
+                const [newKey, setNewKey] = React.useState('');
+                const [newPass, setNewPass] = React.useState('');
+                const [creating, setCreating] = React.useState(false);
+                const [editingUser, setEditingUser] = React.useState(null);
+                React.useEffect(() => onSnapshot(collection(db, 'users'), (s) => setUsers(s.docs.map(d => ({id: d.id, ...d.data()})))), []);
+                const createUser = async (e) => {
+                    e.preventDefault(); setCreating(true);
+                    let app2; try { 
+                        const email = newKey.trim() + HIDDEN_DOMAIN;
+                        app2 = initializeApp(firebaseConfig, "SecondaryApp"); 
+                        const u = await createUserWithEmailAndPassword(getAuth(app2), email, newPass); 
+                        await setDoc(doc(db, 'users', u.user.uid), { username: newKey, email, role: 'client', status: 'active', createdAt: serverTimestamp() }); 
+                        alert("Creado."); setNewKey(''); setNewPass(''); 
+                    } catch(e) { alert(e.message); } finally { if(app2) deleteApp(app2); setCreating(false); }
+                };
+                const saveEdit = async () => { if(!editingUser) return; try { await updateDoc(doc(db, 'users', editingUser.id), { username: editingUser.username, role: editingUser.role }); setEditingUser(null); } catch(e) { alert(e.message); } };
+                const toggleStatus = async (uid, currentStatus) => { if(confirm("¿Cambiar estado?")) await updateDoc(doc(db, 'users', uid), { status: currentStatus === 'active' ? 'suspended' : 'active' }); };
+                const resetDevice = async (uid) => { if(confirm("¿Resetear dispositivo?")) await updateDoc(doc(db, 'users', uid), { registeredDeviceId: null }); };
+                const deleteUser = async (uid) => { if(confirm("⚠️ ¿ELIMINAR USUARIO?\nSe borrará el registro. El usuario no podrá entrar.")) await deleteDoc(doc(db, 'users', uid)); };
+                
+                return (
+                    <div className="space-y-4">
+                        <div className="glass-panel p-4 rounded-lg border-t-2 border-brand-gold"><form onSubmit={createUser} className="flex flex-col gap-2"><div className="flex gap-2"><input value={newKey} onChange={e=>setNewKey(e.target.value)} placeholder="USUARIO" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1 font-mono" required /><input value={newPass} onChange={e=>setNewPass(e.target.value)} placeholder="CLAVE" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1" required /></div><button disabled={creating} className="bg-brand-gold text-black p-3 rounded text-xs font-bold w-full uppercase">CREAR USUARIO</button></form></div>
+                        {editingUser && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"><div className="bg-brand-surface border border-white/10 p-5 rounded-xl w-full max-w-sm animate-slide-up"><h3 className="text-white text-lg mb-4 font-serif">Editar Usuario</h3><input value={editingUser.username} onChange={e=>setEditingUser({...editingUser, username: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 rounded text-white mb-3 text-base"/><select value={editingUser.role} onChange={e=>setEditingUser({...editingUser, role: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 rounded text-white mb-4 text-base"><option value="client">Cliente</option><option value="admin">Administrador</option></select><div className="flex gap-2"><button onClick={saveEdit} className="flex-1 bg-brand-success text-black py-3 rounded font-bold text-sm">GUARDAR</button><button onClick={()=>setEditingUser(null)} className="flex-1 border border-white/20 text-white py-3 rounded text-sm">CANCELAR</button></div></div></div>}
+                        <div className="grid gap-3">{users.map(u => { const isMaster = Security.cleanUsername(u.email) === MASTER_KEY; const displayUsername = u.username || Security.cleanUsername(u.email); return (<div key={u.id} className="glass-panel p-4 rounded-lg flex flex-col gap-2"><div className="flex justify-between items-start"><div><div className="text-white font-mono font-bold">{displayUsername} {isMaster && <i className="fas fa-crown text-brand-gold text-xs"></i>}</div><div className="flex gap-2 mt-1"><span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${u.role==='admin'?'border-purple-500 text-purple-400':'border-blue-500 text-blue-400'}`}>{u.role}</span><span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${u.status==='active'?'border-green-500 text-green-400':'border-red-500 text-red-400'}`}>{u.status}</span></div></div><div className="text-right"><div className="text-[9px] text-gray-500 uppercase">DISPOSITIVO</div><div className="text-xs text-brand-gold font-mono">{u.registeredDeviceId ? '...'+u.registeredDeviceId.slice(-6) : '---'}</div></div></div>{!isMaster && (<div className="grid grid-cols-4 gap-2 border-t border-white/10 pt-2"><button onClick={()=>setEditingUser(u)} className="p-2 bg-white/5 rounded text-white flex justify-center"><i className="fas fa-pen text-xs"></i></button><button onClick={()=>toggleStatus(u.id, u.status)} className="p-2 bg-white/5 rounded text-white flex justify-center"><i className="fas fa-power-off text-xs"></i></button><button onClick={()=>resetDevice(u.id)} className="p-2 bg-white/5 rounded text-white flex justify-center"><i className="fas fa-mobile-alt text-xs"></i></button><button onClick={()=>deleteUser(u.id)} className="p-2 bg-red-900/20 text-brand-danger rounded flex justify-center"><i className="fas fa-trash text-xs"></i></button></div>)}</div>); })}</div>
+                    </div>
+                );
+            };
+
+            // Re-insertando ProductManager (Optimizado v21)
+            const ProductManager = () => {
+                const [products, setProducts] = React.useState([]);
+                const [newProd, setNewProd] = React.useState({ name: '', price: '', category: 'Hardware', image: '', stock: 1 });
+                const fileInputRef = React.useRef();
+                React.useEffect(() => onSnapshot(collection(db, 'products'), (s) => setProducts(s.docs.map(d => ({id: d.id, ...d.data()})))), []);
+                const add = async (e) => { e.preventDefault(); await addDoc(collection(db, 'products'), { ...newProd, price: Number(newProd.price), stock: Number(newProd.stock), createdAt: serverTimestamp() }); setNewProd({ name: '', price: '', category: 'Hardware', image: '', stock: 1 }); };
+                const handleBulkUpload = (e) => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = async (evt) => { const rows = evt.target.result.split('\n').slice(1); let c = 0; for (let row of rows) { const [n, p, cat, img, s] = row.split(','); if (n && p) { await addDoc(collection(db, 'products'), { name: n.trim(), price: Number(p), category: cat?.trim()||'G', image: img?.trim()||'', stock: Number(s)||1, createdAt: serverTimestamp() }); c++; } } alert(`Cargados: ${c}`); e.target.value = null; }; r.readAsText(f); };
+                return (<div className="space-y-4"><div className="glass-panel p-4 rounded-lg border-t border-brand-success flex justify-between items-center"><h3 className="text-xs text-brand-success font-bold uppercase">Inventario</h3><label className="bg-brand-success/10 text-brand-success border border-brand-success px-3 py-1.5 rounded text-xs cursor-pointer"><i className="fas fa-upload mr-1"></i> CSV<input type="file" accept=".csv" className="hidden" ref={fileInputRef} onChange={handleBulkUpload} /></label></div><div className="glass-panel p-4 rounded-lg"><form onSubmit={add} className="flex flex-col gap-2"><input value={newProd.name} onChange={e=>setNewProd({...newProd, name: e.target.value})} placeholder="Nombre Producto" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm" required /><div className="flex gap-2"><input type="number" value={newProd.price} onChange={e=>setNewProd({...newProd, price: e.target.value})} placeholder="Price" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1" required /><select value={newProd.category} onChange={e=>setNewProd({...newProd, category: e.target.value})} className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1"><option>Hardware</option><option>Software</option><option>Servicios</option></select></div><input value={newProd.image} onChange={e=>setNewProd({...newProd, image: e.target.value})} placeholder="URL Imagen (Opcional)" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm" /><button className="bg-brand-success text-black border border-brand-success p-3 rounded text-xs font-bold uppercase">AGREGAR</button></form></div><div className="grid grid-cols-2 gap-3">{products.map(p => (<div key={p.id} className="glass-panel p-3 rounded relative group"><button onClick={()=>deleteDoc(doc(db,'products',p.id))} className="absolute top-1 right-1 z-10 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-70 hover:opacity-100"><i className="fas fa-times text-xs"></i></button><div className="h-20 bg-black/50 rounded mb-2 overflow-hidden"><img src={p.image} className="w-full h-full object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/150'} /></div><div className="text-white text-xs truncate font-bold">{p.name}</div><div className="text-brand-gold text-xs font-mono">{Security.formatMoney(p.price)}</div></div>))}</div></div>);
+            };
+
+            // Re-insertando LoginScreen (Optimizado v21)
             const LoginScreen = ({ onLogin }) => {
                 const [username, setUsername] = React.useState('');
                 const [pass, setPass] = React.useState('');
@@ -784,13 +666,10 @@
                 const [error, setError] = React.useState(null);
                 const [capsLock, setCapsLock] = React.useState(false);
                 const currentDeviceId = Security.getDeviceId(); 
-
                 const processLogin = async (userAuth, isNewUser = false) => {
                     const userRef = doc(db, 'users', userAuth.uid);
                     const userSnap = await getDoc(userRef);
-                    // Capturar nombre exacto del input si es registro nuevo
                     const displayUser = username.trim() || Security.cleanUsername(userAuth.email); 
-
                     if (!userSnap.exists()) {
                         const initialRole = (displayUser.toUpperCase() === MASTER_KEY.toUpperCase()) ? 'admin' : 'client';
                         await setDoc(userRef, { username: displayUser, email: userAuth.email, role: initialRole, registeredDeviceId: currentDeviceId, status: 'active', createdAt: serverTimestamp() });
@@ -804,44 +683,27 @@
                         onLogin(userAuth, data.role);
                     }
                 };
-
                 const handleSubmit = async (e) => {
                     e.preventDefault(); setLoading(true); setError(null);
                     if (username.trim().toUpperCase() === MASTER_KEY.toUpperCase() && pass !== MASTER_PASS) { setError("Credenciales Maestras Incorrectas."); setLoading(false); return; }
                     const fullEmail = username.trim() + HIDDEN_DOMAIN;
                     try {
-                        try {
-                            const cred = await signInWithEmailAndPassword(auth, fullEmail, pass);
-                            await processLogin(cred.user);
-                        } catch (loginErr) {
+                        try { const cred = await signInWithEmailAndPassword(auth, fullEmail, pass); await processLogin(cred.user); } 
+                        catch (loginErr) {
                             if ((loginErr.code === 'auth/user-not-found' || loginErr.code === 'auth/invalid-credential') && username.trim().toUpperCase() === MASTER_KEY.toUpperCase()) {
-                                const newCred = await createUserWithEmailAndPassword(auth, fullEmail, pass);
-                                await processLogin(newCred.user, true);
+                                const newCred = await createUserWithEmailAndPassword(auth, fullEmail, pass); await processLogin(newCred.user, true);
                             } else throw loginErr;
                         }
                     } catch (err) { setError(err.code === 'auth/wrong-password' ? "Clave incorrecta." : err.message); setLoading(false); }
                 };
-
                 const handleKey = (e) => setCapsLock(e.getModifierState("CapsLock"));
-
                 return (
                     <div className="min-h-screen w-full flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center px-4">
                         <div className="absolute inset-0 bg-black/90 backdrop-blur-sm"></div>
                         <div className="relative z-10 w-full max-w-sm glass-panel p-6 rounded-2xl shadow-2xl animate-fade-in flex flex-col gap-6">
-                            <div className="text-center">
-                                <div className="w-20 h-20 bg-gradient-to-tr from-brand-gold to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-brand-gold/20 transform rotate-12">
-                                    <i className="fas fa-fingerprint text-4xl text-black transform -rotate-12"></i>
-                                </div>
-                                <h1 className="font-serif text-3xl text-white tracking-widest mb-1">LUMOS</h1>
-                                <p className="text-brand-gold text-[10px] uppercase tracking-[0.4em]">Elite Access v20</p>
-                            </div>
+                            <div className="text-center"><div className="w-20 h-20 bg-gradient-to-tr from-brand-gold to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-brand-gold/20 transform rotate-12"><i className="fas fa-fingerprint text-4xl text-black transform -rotate-12"></i></div><h1 className="font-serif text-3xl text-white tracking-widest mb-1">LUMOS</h1><p className="text-brand-gold text-[10px] uppercase tracking-[0.4em]">Elite Access v21</p></div>
                             {error && <div className="p-3 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200 text-xs flex items-center gap-2 animate-pulse"><i className="fas fa-exclamation-triangle"></i> {error}</div>}
-                            <form onSubmit={handleSubmit} className="flex flex-col gap-3" onKeyUp={handleKey}>
-                                <input type="text" value={username} onChange={e=>setUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl p-4 text-white placeholder-gray-500 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest text-base" placeholder="USUARIO" required />
-                                <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl p-4 text-white placeholder-gray-500 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest text-base" placeholder="••••••••" required />
-                                {capsLock && <div className="text-center text-yellow-500 text-[10px]"><i className="fas fa-exclamation-triangle"></i> MAYÚSCULAS ACTIVADAS</div>}
-                                <button disabled={loading} className="w-full bg-brand-gold text-black font-bold py-4 rounded-xl mt-2 text-sm tracking-widest uppercase hover:scale-[1.02] transition-transform shadow-lg shadow-brand-gold/20">{loading ? '...' : 'ENTRAR'}</button>
-                            </form>
+                            <form onSubmit={handleSubmit} className="flex flex-col gap-3" onKeyUp={handleKey}><input type="text" value={username} onChange={e=>setUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl p-4 text-white placeholder-gray-500 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest text-base" placeholder="USUARIO" required /><input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl p-4 text-white placeholder-gray-500 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest text-base" placeholder="••••••••" required />{capsLock && <div className="text-center text-yellow-500 text-[10px]"><i className="fas fa-exclamation-triangle"></i> MAYÚSCULAS ACTIVADAS</div>}<button disabled={loading} className="w-full bg-brand-gold text-black font-bold py-4 rounded-xl mt-2 text-sm tracking-widest uppercase hover:scale-[1.02] transition-transform shadow-lg shadow-brand-gold/20">{loading ? '...' : 'ENTRAR'}</button></form>
                             <div className="text-center"><p className="text-[9px] text-gray-600 font-mono">ID DISPOSITIVO: {currentDeviceId.substring(0,8)}...</p></div>
                         </div>
                     </div>
