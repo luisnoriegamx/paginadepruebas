@@ -9,11 +9,10 @@
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Lumos Elite">
     <link rel="apple-touch-icon" href="https://img.icons8.com/color/144/fingerprint.png">
     
     <!-- Manifest -->
-    <link rel="manifest" href='data:application/manifest+json;base64,eyJuYW1lIjoiTHVtb3MgRWxpdGUgU3RvcmUiLCJzaG9ydF9uYW1lIjoiTHVtb3MiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA1MDUwNSIsInRoZW1lX2NvbG9yIjoiI0M1QTA1OSIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQiLCJpY29ucyI6W3sic3JjIjoiaHR0cHM6Ly9pbWcuaWNvbnM4LmNvbS9jb2xvci81MTIvZmluZ2VycHJpbnQucG5nIiwic2l6ZXMiOiI1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyJdXSwicHJlZmVyX3JlbGF0ZWRfYXBwbGljYXRpb25zIjpmYWxzZX0='>
+    <link rel="manifest" href='data:application/manifest+json;base64,eyJuYW1lIjoiTHVtb3MgRWxpdGUgU3RvcmUiLCJzaG9ydF9uYW1lIjoiTHVtb3MiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzAwMDAwMCIsInRoZW1lX2NvbG9yIjoiI2Q0YWYzNyIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQiLCJpY29ucyI6W3sic3JjIjoiaHR0cHM6Ly9pbWcuaWNvbnM4LmNvbS9jb2xvci81MTIvZmluZ2VycHJpbnQucG5nIiwic2l6ZXMiOiI1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyJdXSwicHJlZmVyX3JlbGF0ZWRfYXBwbGljYXRpb25zIjpmYWxzZX0='>
 
     <!-- React Core -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -36,10 +35,10 @@
                     colors: {
                         brand: {
                             black: '#000000',
-                            dark: '#0f0f0f',
-                            surface: '#18181b',
+                            dark: '#0a0a0a',
+                            surface: '#121212',
                             gold: '#d4af37',
-                            muted: '#a1a1aa',
+                            muted: '#525252',
                             danger: '#ef4444',
                             success: '#10b981',
                             accent: '#3b82f6'
@@ -49,36 +48,39 @@
                         sans: ['Inter', 'sans-serif'],
                         serif: ['Cinzel', 'serif'],
                         mono: ['Space Mono', 'monospace']
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.4s ease-out',
-                        'slide-up': 'slideUp 0.4s ease-out'
-                    },
-                    keyframes: {
-                        fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
-                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } }
                     }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #000; color: #f4f4f5; font-size: 16px; -webkit-tap-highlight-color: transparent; }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        body { background-color: #000; color: #e5e5e5; font-size: 14px; -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { width: 3px; height: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        .glass-panel { background: rgba(24, 24, 27, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        
+        .glass-panel { 
+            background: rgba(20, 20, 20, 0.8); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
         input, select, button { touch-action: manipulation; }
-        .mobile-only { display: block; }
-        .desktop-only { display: none; }
-        @media (min-width: 768px) { .mobile-only { display: none; } .desktop-only { display: block; } }
+        
+        @media (max-width: 768px) {
+            .glass-panel { padding: 0.75rem; border-radius: 0.75rem; } 
+            h1 { font-size: 1.25rem; line-height: 1.2; }
+            input, button { font-size: 1rem; } 
+        }
+        
         #loader-overlay { position: fixed; inset: 0; z-index: 9999; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
     <div id="loader-overlay">
-        <div class="w-12 h-12 border-t-2 border-brand-gold rounded-full animate-spin mb-4"></div>
-        <p class="text-brand-gold text-xs tracking-[0.3em] font-serif animate-pulse">CARGANDO...</p>
+        <div class="w-10 h-10 border-t-2 border-brand-gold rounded-full animate-spin mb-3"></div>
+        <p class="text-brand-gold text-xs tracking-widest font-serif">CARGANDO...</p>
     </div>
 
     <div id="root"></div>
@@ -100,7 +102,7 @@
             document.getElementById('loader-overlay').style.display = 'none';
             const { initializeApp, deleteApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, getFirestore, collection, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, query, where, onSnapshot, serverTimestamp, orderBy, runTransaction } = window.FirebaseDS;
 
-            // --- CONFIGURACIÓN ---
+            // --- CONFIGURACIÓN FIREBASE ---
             const firebaseConfig = {
                 apiKey: "AIzaSyD-EXCm7GInlVPs35kCO0K4352TwYOe6tc",
                 authDomain: "lumos-dws.firebaseapp.com",
@@ -109,6 +111,7 @@
                 messagingSenderId: "234532434316",
                 appId: "1:234532434316:web:88f8c799f193e3e18726a9"
             };
+            
             const MASTER_KEY = "Admin01"; 
             const MASTER_PASS = "Sup2025"; 
             const HIDDEN_DOMAIN = "@lumos.private";
@@ -124,18 +127,18 @@
                     if (!id) { id = crypto.randomUUID(); localStorage.setItem('lumos_elite_id', id); }
                     return id;
                 },
-                formatMoney: (amount) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount),
+                formatMoney: (amount) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(amount),
                 formatDate: (timestamp) => {
                     if(!timestamp) return '...';
                     return new Date(timestamp.seconds * 1000).toLocaleDateString("es-MX", { day: 'numeric', month: 'short', year:'numeric', hour: '2-digit', minute:'2-digit' });
                 },
+                // Limpia el dominio oculto, pero no altera mayúsculas/minúsculas
                 cleanUsername: (email) => email ? email.replace(HIDDEN_DOMAIN, '') : ''
             };
 
-            const Loader = ({ text }) => (
+            const Loader = () => (
                 <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
-                    <div className="w-12 h-12 border-t-2 border-brand-gold rounded-full animate-spin mb-4"></div>
-                    <p className="text-brand-gold text-xs tracking-[0.3em] font-serif animate-pulse">{text || 'PROCESANDO...'}</p>
+                    <div className="w-8 h-8 border-t-2 border-brand-gold rounded-full animate-spin"></div>
                 </div>
             );
 
@@ -159,23 +162,23 @@
             const generatePDF = (order) => {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [80, 200] });
-                doc.setFont("courier", "bold"); doc.setFontSize(14); doc.text("LUMOS ELITE", 40, 10, { align: "center" });
-                doc.setFontSize(8); doc.setFont("courier", "normal"); doc.text("COMPROBANTE", 40, 15, { align: "center" });
-                let y = 25; 
-                doc.text(`FOLIO: ${order.folio || 'PENDIENTE'}`, 5, y); y+=5; 
-                doc.text(`FECHA: ${Security.formatDate(order.createdAt)}`, 5, y); y+=5;
-                doc.text(`CLIENTE: ${order.username}`, 5, y); y+=5;
-                doc.text("--------------------------------", 40, y, { align: "center" }); y+=5;
+                doc.setFont("courier", "bold"); doc.setFontSize(12); doc.text("LUMOS ELITE", 40, 10, { align: "center" });
+                doc.setFontSize(8); doc.setFont("courier", "normal"); 
+                let y = 20; 
+                doc.text(`FOLIO: ${order.folio || '-'}`, 5, y); y+=4;
+                doc.text(`FECHA: ${Security.formatDate(order.createdAt)}`, 5, y); y+=4;
+                doc.text(`CLIENTE: ${order.username}`, 5, y); y+=6;
+                doc.text("--------------------------------", 40, y, { align: "center" }); y+=4;
                 order.items.forEach(i => { 
-                    doc.text(`${i.name.substring(0,18)}`, 5, y); 
-                    doc.text(`${Security.formatMoney(i.price)}`, 75, y, { align: "right" }); y+=5; 
+                    doc.text(`${i.name.substring(0,20)}`, 5, y); 
+                    doc.text(`${Security.formatMoney(i.price)}`, 75, y, { align: "right" }); y+=4; 
                 });
-                doc.text("--------------------------------", 40, y, { align: "center" }); y+=5;
+                doc.text("--------------------------------", 40, y, { align: "center" }); y+=4;
                 doc.setFont("courier", "bold"); doc.text(`TOTAL: ${Security.formatMoney(order.total)}`, 75, y, { align: "right" });
-                doc.save(`Ticket_${order.folio || 'LMS'}.pdf`);
+                doc.save(`Ticket_${order.folio}.pdf`);
             };
 
-            // --- COMPONENTE: DASHBOARD ANALYTICS (RESTAURADO) ---
+            // --- DASHBOARD ---
             const DashboardAnalytics = () => {
                 const [orders, setOrders] = React.useState([]);
                 const [users, setUsers] = React.useState([]);
@@ -207,37 +210,26 @@
                         type: 'line',
                         data: {
                             labels,
-                            datasets: [{ label: 'Ventas', data, borderColor: '#C5A059', backgroundColor: 'rgba(197,160,89,0.1)', fill: true }]
+                            datasets: [{ label: 'Ventas', data, borderColor: '#d4af37', backgroundColor: 'rgba(212, 175, 55, 0.1)', borderWidth: 1, fill: true, tension: 0.4 }]
                         },
-                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#333' } } } }
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, elements: { point: { radius: 0 } } }
                     });
                 }, [orders]);
 
-                const Kpi = ({ title, val, icon, color }) => (
-                    <div className="glass-panel p-4 rounded-xl border-l-4 border-brand-gold relative overflow-hidden">
-                        <div className={`absolute right-2 top-2 p-2 rounded-lg bg-white/5 ${color} text-xl`}><i className={`fas ${icon}`}></i></div>
-                        <p className="text-xs text-gray-400 uppercase tracking-wider">{title}</p>
-                        <h3 className="text-xl md:text-2xl text-white font-serif mt-1">{val}</h3>
-                    </div>
-                );
-
                 return (
-                    <div className="space-y-6 animate-fade-in">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                            <Kpi title="Ventas Totales" val={Security.formatMoney(totalRev)} icon="fa-sack-dollar" color="text-brand-gold" />
-                            <Kpi title="Pedidos" val={orders.length} icon="fa-box" color="text-blue-400" />
-                            <Kpi title="Ticket Promedio" val={Security.formatMoney(avgTicket)} icon="fa-chart-pie" color="text-purple-400" />
-                            <Kpi title="Usuarios" val={users.length} icon="fa-users" color="text-green-400" />
+                    <div className="space-y-3 animate-fade-in">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div className="glass-panel p-3 rounded-lg border-l-2 border-brand-gold"><p className="text-[10px] text-gray-400">VENTAS</p><h3 className="text-lg text-white font-serif">{Security.formatMoney(totalRev)}</h3></div>
+                            <div className="glass-panel p-3 rounded-lg border-l-2 border-blue-500"><p className="text-[10px] text-gray-400">PEDIDOS</p><h3 className="text-lg text-white font-serif">{orders.length}</h3></div>
+                            <div className="glass-panel p-3 rounded-lg border-l-2 border-purple-500"><p className="text-[10px] text-gray-400">PROMEDIO</p><h3 className="text-lg text-white font-serif">{Security.formatMoney(avgTicket)}</h3></div>
+                            <div className="glass-panel p-3 rounded-lg border-l-2 border-green-500"><p className="text-[10px] text-gray-400">USUARIOS</p><h3 className="text-lg text-white font-serif">{users.length}</h3></div>
                         </div>
-                        <div className="glass-panel p-4 md:p-6 rounded-xl h-80">
-                            <h3 className="text-white mb-4">Rendimiento Semanal</h3>
-                            <div className="h-64"><canvas ref={chartRef}></canvas></div>
-                        </div>
+                        <div className="glass-panel p-3 rounded-lg h-48"><canvas ref={chartRef}></canvas></div>
                     </div>
                 );
             };
 
-            // --- COMPONENTE: MONITOR DE PEDIDOS (ADMIN) ---
+            // --- ADMIN: MONITOR ---
             const AdminOrderMonitor = () => {
                 const [orders, setOrders] = React.useState([]);
                 const [selectedOrder, setSelectedOrder] = React.useState(null); 
@@ -254,19 +246,18 @@
 
                 const updateStatus = async (id, newStatus) => {
                     try { await updateDoc(doc(db, "orders", id), { status: newStatus }); }
-                    catch(e) { alert("Error: " + e.message); }
+                    catch(e) { alert("Error al actualizar estado: " + e.message); }
                 };
 
                 const handleDeleteOrder = async (id) => { 
                     if(confirm("¿Eliminar permanentemente?")) {
                         try { await deleteDoc(doc(db, "orders", id)); }
-                        catch(e) { alert("Error: " + e.message); }
+                        catch(e) { alert("Error al eliminar: " + e.message); }
                     }
                 };
 
                 const OrderItem = ({ o }) => (
                     <div className="glass-panel p-4 rounded-xl mb-4 md:mb-0 md:contents">
-                        {/* Mobile View */}
                         <div className="md:hidden flex flex-col gap-3">
                             <div className="flex justify-between items-start">
                                 <div>
@@ -279,17 +270,16 @@
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 mt-2">
-                                <select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`flex-1 bg-black/40 border border-white/10 rounded px-3 py-3 text-sm outline-none ${o.status==='Pendiente'?'text-yellow-500':'text-green-500'}`}><option value="Pendiente">Pendiente</option><option value="Enviado">Enviado</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select>
+                                <select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`flex-1 bg-black/40 border border-white/10 rounded px-3 py-3 text-sm outline-none ${o.status==='Pendiente'?'text-yellow-500':'text-green-500'}`}><option>Pendiente</option><option>Enviado</option><option>Entregado</option><option>Cancelado</option></select>
                                 <button onClick={()=>setSelectedOrder(o)} className="bg-brand-accent/20 text-brand-accent p-3 rounded"><i className="fas fa-eye"></i></button>
                                 <button onClick={()=>handleDeleteOrder(o.id)} className="bg-brand-danger/20 text-brand-danger p-3 rounded"><i className="fas fa-trash"></i></button>
                             </div>
                         </div>
-                        {/* Desktop View */}
                         <div className="hidden md:contents text-sm">
                             <div className="p-4 font-mono text-brand-gold border-b border-white/5">{o.folio || '---'}</div>
                             <div className="p-4 text-white border-b border-white/5">{o.username}</div>
                             <div className="p-4 border-b border-white/5">{Security.formatMoney(o.total)}</div>
-                            <div className="p-4 border-b border-white/5"><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`bg-transparent border border-white/20 rounded px-2 py-1 text-xs outline-none cursor-pointer ${o.status==='Pendiente'?'text-yellow-500':'text-green-500'}`}><option value="Pendiente">Pendiente</option><option value="Enviado">Enviado</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select></div>
+                            <div className="p-4 border-b border-white/5"><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`bg-transparent border border-white/20 rounded px-2 py-1 text-xs outline-none cursor-pointer ${o.status==='Pendiente'?'text-yellow-500':'text-green-500'}`}><option>Pendiente</option><option>Enviado</option><option>Entregado</option><option>Cancelado</option></select></div>
                             <div className="p-4 text-right flex justify-end gap-2 border-b border-white/5"><button onClick={()=>setSelectedOrder(o)} className="text-brand-accent hover:bg-white/10 p-2 rounded"><i className="fas fa-eye"></i></button><button onClick={()=>handleDeleteOrder(o.id)} className="text-brand-danger hover:bg-white/10 p-2 rounded"><i className="fas fa-trash"></i></button></div>
                         </div>
                     </div>
@@ -326,16 +316,16 @@
                 }, [user.uid]);
 
                 return (
-                    <div className="space-y-4 pb-24">
-                        {orders.length === 0 ? <p className="text-brand-muted text-center py-10">No hay pedidos recientes.</p> : orders.map(order => (
-                            <div key={order.id} className="glass-panel p-5 rounded-xl border-l-4 border-brand-gold/50 flex flex-col gap-4 active:scale-[0.98] transition-transform">
-                                <div className="flex justify-between items-start">
-                                    <div><span className="font-mono text-brand-gold text-xl block font-bold">{order.folio}</span><p className="text-sm text-brand-muted mt-1">{Security.formatDate(order.createdAt)} • {order.items.length} Items</p></div>
-                                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${order.status==='Pendiente'?'bg-yellow-500/20 text-yellow-500':'bg-green-500/20 text-green-500'}`}>{order.status}</span>
+                    <div className="space-y-3 pb-20">
+                        {orders.length === 0 ? <p className="text-gray-500 text-center py-10 text-sm">Sin pedidos.</p> : orders.map(order => (
+                            <div key={order.id} className="glass-panel p-4 rounded-lg border-l-2 border-brand-gold flex flex-col gap-2">
+                                <div className="flex justify-between">
+                                    <div><span className="font-mono text-brand-gold font-bold">{order.folio}</span><p className="text-xs text-gray-400">{Security.formatDate(order.createdAt)} • {order.items.length} Items</p></div>
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase h-fit ${order.status==='Pendiente'?'bg-yellow-900/50 text-yellow-500':'bg-green-900/50 text-green-500'}`}>{order.status}</span>
                                 </div>
-                                <div className="flex items-center justify-between border-t border-white/5 pt-4">
-                                    <span className="text-2xl font-serif text-white">{Security.formatMoney(order.total)}</span>
-                                    <button onClick={() => generatePDF(order)} className="bg-white/10 text-white p-3 rounded-full hover:bg-brand-gold hover:text-black transition"><i className="fas fa-file-pdf"></i></button>
+                                <div className="flex justify-between items-center border-t border-white/5 pt-2">
+                                    <span className="text-lg font-serif text-white">{Security.formatMoney(order.total)}</span>
+                                    <button onClick={() => generatePDF(order)} className="text-gray-400 hover:text-white"><i className="fas fa-file-pdf"></i></button>
                                 </div>
                             </div>
                         ))}
@@ -343,7 +333,7 @@
                 );
             };
 
-            // --- GESTIÓN DE USUARIOS (ADAPTATIVO) ---
+            // --- GESTIÓN DE USUARIOS ---
             const UserManager = () => {
                 const [users, setUsers] = React.useState([]);
                 const [newKey, setNewKey] = React.useState('');
@@ -359,8 +349,9 @@
                         const email = newKey.trim() + HIDDEN_DOMAIN;
                         app2 = initializeApp(firebaseConfig, "SecondaryApp"); 
                         const u = await createUserWithEmailAndPassword(getAuth(app2), email, newPass); 
+                        // GUARDAR EL USERNAME EXACTO (newKey)
                         await setDoc(doc(db, 'users', u.user.uid), { username: newKey, email, role: 'client', status: 'active', createdAt: serverTimestamp() }); 
-                        alert("Creado."); setNewKey(''); setNewPass(''); 
+                        alert("Usuario creado correctamente."); setNewKey(''); setNewPass(''); 
                     } catch(e) { alert(e.message); } finally { if(app2) deleteApp(app2); setCreating(false); }
                 };
 
@@ -381,50 +372,55 @@
                 };
 
                 return (
-                    <div className="space-y-6">
-                        <div className="glass-panel p-5 rounded-xl border-t-2 border-brand-gold">
-                            <form onSubmit={createUser} className="flex flex-col md:flex-row gap-3">
-                                <input value={newKey} onChange={e=>setNewKey(e.target.value)} placeholder="USUARIO NUEVO" className="bg-black/50 border border-white/10 p-4 rounded-lg text-white text-base flex-1 font-mono" required />
-                                <input value={newPass} onChange={e=>setNewPass(e.target.value)} placeholder="CONTRASEÑA" className="bg-black/50 border border-white/10 p-4 rounded-lg text-white text-base flex-1" required />
-                                <button disabled={creating} className="bg-brand-gold text-black px-6 py-4 md:py-0 rounded-lg text-sm font-bold uppercase tracking-wider">{creating ? '...' : 'CREAR'}</button>
+                    <div className="space-y-4">
+                        <div className="glass-panel p-4 rounded-lg border-t-2 border-brand-gold">
+                            <form onSubmit={createUser} className="flex flex-col gap-2">
+                                <div className="flex gap-2">
+                                    <input value={newKey} onChange={e=>setNewKey(e.target.value)} placeholder="USUARIO" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1 font-mono" required />
+                                    <input value={newPass} onChange={e=>setNewPass(e.target.value)} placeholder="CLAVE" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1" required />
+                                </div>
+                                <button disabled={creating} className="bg-brand-gold text-black p-3 rounded text-xs font-bold w-full uppercase">CREAR USUARIO</button>
                             </form>
                         </div>
 
                         {editingUser && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
-                                <div className="bg-brand-surface border border-white/10 p-6 rounded-xl w-full max-w-sm animate-slide-up">
-                                    <h3 className="text-white text-xl mb-6 font-serif">Editar Usuario</h3>
-                                    <input value={editingUser.username} onChange={e=>setEditingUser({...editingUser, username: e.target.value})} className="w-full bg-black/50 border border-white/10 p-4 rounded-lg text-white mb-4 text-lg font-mono"/>
-                                    <select value={editingUser.role} onChange={e=>setEditingUser({...editingUser, role: e.target.value})} className="w-full bg-black/50 border border-white/10 p-4 rounded-lg text-white mb-6 text-lg"><option value="client">Cliente</option><option value="admin">Administrador</option></select>
-                                    <div className="flex gap-3"><button onClick={saveEdit} className="flex-1 bg-brand-success text-black py-4 rounded-lg font-bold">GUARDAR</button><button onClick={()=>setEditingUser(null)} className="flex-1 border border-white/20 text-white py-4 rounded-lg">CANCELAR</button></div>
+                                <div className="bg-brand-surface border border-white/10 p-5 rounded-xl w-full max-w-sm animate-slide-up">
+                                    <h3 className="text-white text-lg mb-4 font-serif">Editar Usuario</h3>
+                                    <input value={editingUser.username} onChange={e=>setEditingUser({...editingUser, username: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 rounded text-white mb-3 text-base"/>
+                                    <select value={editingUser.role} onChange={e=>setEditingUser({...editingUser, role: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 rounded text-white mb-4 text-base"><option value="client">Cliente</option><option value="admin">Administrador</option></select>
+                                    <div className="flex gap-2"><button onClick={saveEdit} className="flex-1 bg-brand-success text-black py-3 rounded font-bold text-sm">GUARDAR</button><button onClick={()=>setEditingUser(null)} className="flex-1 border border-white/20 text-white py-3 rounded text-sm">CANCELAR</button></div>
                                 </div>
                             </div>
                         )}
 
-                        <div className="grid gap-4">
+                        <div className="grid gap-3">
                             {users.map(u => {
                                 const isMaster = Security.cleanUsername(u.email) === MASTER_KEY;
+                                // Usamos u.username directamente, que guarda las mayúsculas/minúsculas exactas
+                                const displayUsername = u.username || Security.cleanUsername(u.email);
+                                
                                 return (
-                                    <div key={u.id} className="glass-panel p-5 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-white font-mono text-lg font-bold">{u.username || Security.cleanUsername(u.email)}</span>
-                                                {isMaster && <i className="fas fa-crown text-brand-gold"></i>}
+                                    <div key={u.id} className="glass-panel p-4 rounded-lg flex flex-col gap-2">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <div className="text-white font-mono font-bold">{displayUsername} {isMaster && <i className="fas fa-crown text-brand-gold text-xs"></i>}</div>
+                                                <div className="flex gap-2 mt-1">
+                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${u.role==='admin'?'border-purple-500 text-purple-400':'border-blue-500 text-blue-400'}`}>{u.role}</span>
+                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold border ${u.status==='active'?'border-green-500 text-green-400':'border-red-500 text-red-400'}`}>{u.status}</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-2 text-sm">
-                                                <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${u.role==='admin'?'bg-purple-900/50 text-purple-300':'bg-blue-900/50 text-blue-300'}`}>{u.role}</span>
-                                                <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${u.status==='active'?'bg-green-900/50 text-green-300':'bg-red-900/50 text-red-300'}`}>{u.status}</span>
-                                            </div>
-                                            <div className="text-xs text-brand-muted font-mono mt-1">
-                                                ID: {u.registeredDeviceId ? <span className="text-brand-gold">...{u.registeredDeviceId.slice(-8)}</span> : 'NO VINCULADO'}
+                                            <div className="text-right">
+                                                <div className="text-[9px] text-gray-500 uppercase">DISPOSITIVO</div>
+                                                <div className="text-xs text-brand-gold font-mono">{u.registeredDeviceId ? '...'+u.registeredDeviceId.slice(-6) : '---'}</div>
                                             </div>
                                         </div>
                                         {!isMaster && (
-                                            <div className="flex gap-2 justify-end border-t md:border-t-0 border-white/5 pt-3 md:pt-0">
-                                                <button onClick={()=>setEditingUser(u)} className="p-3 bg-white/5 rounded-lg text-white hover:bg-white/20 flex-1 md:flex-none justify-center flex"><i className="fas fa-pen"></i></button>
-                                                <button onClick={()=>toggleStatus(u.id, u.status)} className="p-3 bg-white/5 rounded-lg text-white hover:bg-white/20 flex-1 md:flex-none justify-center flex"><i className="fas fa-power-off"></i></button>
-                                                <button onClick={()=>resetDevice(u.id)} className="p-3 bg-white/5 rounded-lg text-white hover:bg-white/20 flex-1 md:flex-none justify-center flex" title="Desvincular"><i className="fas fa-mobile-alt"></i></button>
-                                                <button onClick={()=>deleteUser(u.id)} className="p-3 bg-red-900/20 text-brand-danger rounded-lg hover:bg-red-900/40 flex-1 md:flex-none justify-center flex"><i className="fas fa-trash"></i></button>
+                                            <div className="grid grid-cols-4 gap-2 border-t border-white/10 pt-2">
+                                                <button onClick={()=>setEditingUser(u)} className="p-2 bg-white/5 rounded text-white flex justify-center"><i className="fas fa-pen text-xs"></i></button>
+                                                <button onClick={()=>toggleStatus(u.id, u.status)} className="p-2 bg-white/5 rounded text-white flex justify-center"><i className="fas fa-power-off text-xs"></i></button>
+                                                <button onClick={()=>resetDevice(u.id)} className="p-2 bg-white/5 rounded text-white flex justify-center"><i className="fas fa-mobile-alt text-xs"></i></button>
+                                                <button onClick={()=>deleteUser(u.id)} className="p-2 bg-red-900/20 text-brand-danger rounded flex justify-center"><i className="fas fa-trash text-xs"></i></button>
                                             </div>
                                         )}
                                     </div>
@@ -435,7 +431,7 @@
                 );
             };
 
-            // --- PRODUCT MANAGER (ADAPTATIVO) ---
+            // --- PRODUCT MANAGER ---
             const ProductManager = () => {
                 const [products, setProducts] = React.useState([]);
                 const [newProd, setNewProd] = React.useState({ name: '', price: '', category: 'Hardware', image: '', stock: 1 });
@@ -443,68 +439,40 @@
 
                 React.useEffect(() => onSnapshot(collection(db, 'products'), (s) => setProducts(s.docs.map(d => ({id: d.id, ...d.data()})))), []);
                 
-                const add = async (e) => {
-                    e.preventDefault(); 
-                    await addDoc(collection(db, 'products'), { ...newProd, price: Number(newProd.price), stock: Number(newProd.stock), createdAt: serverTimestamp() });
-                    setNewProd({ name: '', price: '', category: 'Hardware', image: '', stock: 1 });
-                };
-
-                const downloadTemplate = () => {
-                    const csvContent = "data:text/csv;charset=utf-8,nombre,precio,categoria,imagen_url,stock\nProductoEjemplo,1500,Hardware,https://via.placeholder.com/150,10";
-                    const encodedUri = encodeURI(csvContent);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", encodedUri);
-                    link.setAttribute("download", "plantilla.csv");
-                    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                };
-
+                const add = async (e) => { e.preventDefault(); await addDoc(collection(db, 'products'), { ...newProd, price: Number(newProd.price), stock: Number(newProd.stock), createdAt: serverTimestamp() }); setNewProd({ name: '', price: '', category: 'Hardware', image: '', stock: 1 }); };
                 const handleBulkUpload = (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = async (evt) => {
+                    const f = e.target.files[0]; if (!f) return;
+                    const r = new FileReader(); r.onload = async (evt) => {
                         const rows = evt.target.result.split('\n').slice(1);
-                        let count = 0;
-                        for (let row of rows) {
-                            const [name, price, category, image, stock] = row.split(',');
-                            if (name && price) {
-                                await addDoc(collection(db, 'products'), {
-                                    name: name.trim(), price: Number(price), category: category?.trim() || 'General', image: image?.trim() || '', stock: Number(stock) || 1, createdAt: serverTimestamp()
-                                });
-                                count++;
-                            }
-                        }
-                        alert(`Se cargaron ${count} productos correctamente.`);
-                        e.target.value = null;
-                    };
-                    reader.readAsText(file);
+                        let c = 0; for (let row of rows) { const [n, p, cat, img, s] = row.split(','); if (n && p) { await addDoc(collection(db, 'products'), { name: n.trim(), price: Number(p), category: cat?.trim()||'G', image: img?.trim()||'', stock: Number(s)||1, createdAt: serverTimestamp() }); c++; } }
+                        alert(`Cargados: ${c}`); e.target.value = null;
+                    }; r.readAsText(f);
                 };
                 
                 return (
-                    <div className="space-y-6">
-                        <div className="glass-panel p-6 rounded-xl border-t border-brand-success flex flex-col md:flex-row justify-between gap-4">
-                            <h3 className="text-sm text-brand-success font-bold uppercase mb-1">Inventario</h3>
-                            <div className="flex gap-2">
-                                <button onClick={downloadTemplate} className="bg-white/5 text-gray-300 border border-white/10 px-3 py-2 rounded text-xs flex items-center gap-2"><i className="fas fa-download"></i> Plantilla</button>
-                                <label className="bg-brand-success/20 text-brand-success border border-brand-success px-3 py-2 rounded text-xs cursor-pointer flex items-center gap-2"><i className="fas fa-upload"></i> Carga Masiva<input type="file" accept=".csv" className="hidden" ref={fileInputRef} onChange={handleBulkUpload} /></label>
-                            </div>
+                    <div className="space-y-4">
+                        <div className="glass-panel p-4 rounded-lg border-t border-brand-success flex justify-between items-center">
+                            <h3 className="text-xs text-brand-success font-bold uppercase">Inventario</h3>
+                            <label className="bg-brand-success/10 text-brand-success border border-brand-success px-3 py-1.5 rounded text-xs cursor-pointer"><i className="fas fa-upload mr-1"></i> CSV<input type="file" accept=".csv" className="hidden" ref={fileInputRef} onChange={handleBulkUpload} /></label>
                         </div>
-                        <div className="glass-panel p-4 rounded-xl">
-                            <form onSubmit={add} className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
-                                <input value={newProd.name} onChange={e=>setNewProd({...newProd, name: e.target.value})} placeholder="Nombre" className="md:col-span-2 bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm" required />
-                                <input value={newProd.image} onChange={e=>setNewProd({...newProd, image: e.target.value})} placeholder="URL Img" className="bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm" />
-                                <input type="number" value={newProd.price} onChange={e=>setNewProd({...newProd, price: e.target.value})} placeholder="Precio" className="bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm" required />
-                                <select value={newProd.category} onChange={e=>setNewProd({...newProd, category: e.target.value})} className="bg-black/50 border border-white/10 p-3 rounded-lg text-white text-sm"><option>Hardware</option><option>Software</option><option>Servicios</option></select>
-                                <button className="bg-brand-success text-black border border-brand-success px-4 h-11 rounded-lg text-xs font-bold w-full md:w-auto">GUARDAR</button>
+                        <div className="glass-panel p-4 rounded-lg">
+                            <form onSubmit={add} className="flex flex-col gap-2">
+                                <input value={newProd.name} onChange={e=>setNewProd({...newProd, name: e.target.value})} placeholder="Nombre Producto" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm" required />
+                                <div className="flex gap-2">
+                                    <input type="number" value={newProd.price} onChange={e=>setNewProd({...newProd, price: e.target.value})} placeholder="Price" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1" required />
+                                    <select value={newProd.category} onChange={e=>setNewProd({...newProd, category: e.target.value})} className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm flex-1"><option>Hardware</option><option>Software</option><option>Servicios</option></select>
+                                </div>
+                                <input value={newProd.image} onChange={e=>setNewProd({...newProd, image: e.target.value})} placeholder="URL Imagen (Opcional)" className="bg-black/50 border border-white/10 p-3 rounded text-white text-sm" />
+                                <button className="bg-brand-success text-black border border-brand-success p-3 rounded text-xs font-bold uppercase">AGREGAR</button>
                             </form>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                             {products.map(p => (
                                 <div key={p.id} className="glass-panel p-3 rounded relative group">
-                                    <button onClick={()=>deleteDoc(doc(db,'products',p.id))} className="absolute top-1 right-1 z-10 bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><i className="fas fa-times"></i></button>
-                                    <img src={p.image} className="w-full h-32 object-cover rounded bg-black mb-2" onError={(e)=>e.target.src='https://via.placeholder.com/150'} />
-                                    <div className="text-white text-sm truncate font-bold">{p.name}</div>
-                                    <div className="text-brand-gold text-xs font-mono mt-1">{Security.formatMoney(p.price)}</div>
+                                    <button onClick={()=>deleteDoc(doc(db,'products',p.id))} className="absolute top-1 right-1 z-10 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-70 hover:opacity-100"><i className="fas fa-times text-xs"></i></button>
+                                    <div className="h-20 bg-black/50 rounded mb-2 overflow-hidden"><img src={p.image} className="w-full h-full object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/150'} /></div>
+                                    <div className="text-white text-xs truncate font-bold">{p.name}</div>
+                                    <div className="text-brand-gold text-xs font-mono">{Security.formatMoney(p.price)}</div>
                                 </div>
                             ))}
                         </div>
@@ -512,7 +480,7 @@
                 );
             };
 
-            // --- APP MAIN (Navegación Adaptativa) ---
+            // --- APP MAIN ---
             const StoreApp = ({ user, role, onLogout }) => {
                 const [view, setView] = React.useState(role === 'admin' ? 'dashboard' : 'store'); 
                 const [cart, setCart] = React.useState([]);
@@ -520,9 +488,8 @@
                 const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
                 const { isInstallable, install } = usePWAInstall();
                 const username = Security.cleanUsername(user.email);
-
-                // Catálogo simplificado para móvil
                 const [products, setProducts] = React.useState([]);
+
                 React.useEffect(() => onSnapshot(collection(db, 'products'), s => setProducts(s.docs.map(d => ({id:d.id, ...d.data()})))), []);
 
                 const addToCart = (p) => { setCart([...cart, p]); setCartOpen(true); };
@@ -541,7 +508,7 @@
                             const orderData = { userId: user.uid, username, items: cart, total, status: 'Pendiente', createdAt: serverTimestamp(), deviceId: Security.getDeviceId(), folio };
                             t.set(doc(collection(db, "orders")), orderData);
                         });
-                        if(confirm("✅ ¡Pedido Listo!\n\n¿Descargar ticket PDF?")) {
+                        if(confirm("✅ Pedido completado.\n\n¿Descargar ticket PDF?")) {
                             generatePDF({ folio: 'NUEVO', username, items: cart, total, createdAt: {seconds: Date.now()/1000} }); 
                         }
                         setCart([]); setCartOpen(false); 
@@ -549,98 +516,90 @@
                 };
 
                 const MenuItem = ({ icon, label, target }) => (
-                    <button 
-                        onClick={()=>{setView(target); setMobileMenuOpen(false)}} 
-                        className={`w-full text-left p-4 rounded-xl text-base mb-2 flex items-center gap-4 transition ${view===target ? 'bg-brand-gold text-black font-bold' : 'text-gray-400 hover:bg-white/5'}`}
-                    >
-                        <i className={`fas ${icon} w-6 text-center`}></i> {label}
+                    <button onClick={()=>{setView(target); setMobileMenuOpen(false)}} className={`w-full text-left p-4 rounded-xl text-base mb-1 flex items-center gap-4 transition ${view===target ? 'bg-brand-gold text-black font-bold' : 'text-gray-400 hover:bg-white/5'}`}>
+                        <i className={`fas ${icon} w-5 text-center`}></i> {label}
                     </button>
                 );
 
                 return (
                     <div className="min-h-screen bg-brand-dark flex flex-col md:flex-row pb-20 md:pb-0">
                         {/* SIDEBAR DESKTOP */}
-                        <aside className="hidden md:flex flex-col w-72 glass-panel border-r border-white/5 h-screen sticky top-0 z-30 p-6">
-                            <h2 className="font-serif text-3xl text-white tracking-widest mb-10 flex items-center gap-3"><i className="fas fa-fingerprint text-brand-gold"></i> LUMOS</h2>
-                            <div className="flex-1 space-y-1">
+                        <aside className="hidden md:flex flex-col w-64 glass-panel border-r border-white/5 h-screen sticky top-0 z-30 p-4">
+                            <div className="flex justify-between items-center mb-6 px-2">
+                                <h2 className="font-serif text-2xl text-white tracking-widest"><i className="fas fa-fingerprint text-brand-gold mr-2"></i> LUMOS</h2>
+                                <button onClick={onLogout} className="text-red-400 hover:text-white p-2" title="Salir"><i className="fas fa-sign-out-alt"></i></button>
+                            </div>
+                            <div className="mb-4 px-2"><div className="text-xs text-brand-gold font-mono truncate border-b border-white/10 pb-2">{username}</div></div>
+                            <div className="flex-1 space-y-1 overflow-y-auto">
                                 <MenuItem icon="fa-store" label="Catálogo" target="store" />
-                                <button onClick={()=>setCartOpen(true)} className="w-full text-left p-4 rounded-xl text-base mb-2 flex items-center gap-4 text-gray-400 hover:bg-white/5"><i className="fas fa-shopping-cart w-6 text-center"></i> Carrito ({cart.length})</button>
+                                <button onClick={()=>setCartOpen(true)} className="w-full text-left p-4 rounded-xl text-base mb-1 flex items-center gap-4 text-gray-400 hover:bg-white/5"><i className="fas fa-shopping-cart w-5 text-center"></i> Carrito ({cart.length})</button>
                                 <MenuItem icon="fa-clock" label="Mis Pedidos" target="orders" />
                                 {role === 'admin' && (
                                     <>
-                                        <div className="pt-6 mt-6 border-t border-white/10 text-xs text-gray-500 uppercase font-bold tracking-widest mb-2 px-2">Administración</div>
+                                        <div className="pt-4 mt-4 border-t border-white/10 text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 px-2">Admin</div>
                                         <MenuItem icon="fa-chart-pie" label="Dashboard" target="dashboard" />
-                                        <MenuItem icon="fa-list" label="Monitor Pedidos" target="admin_orders" />
+                                        <MenuItem icon="fa-list" label="Monitor" target="admin_orders" />
                                         <MenuItem icon="fa-boxes" label="Inventario" target="inventory" />
                                         <MenuItem icon="fa-users" label="Usuarios" target="users" />
                                     </>
                                 )}
                             </div>
-                            {isInstallable && <button onClick={install} className="w-full bg-white/5 p-3 rounded-xl text-brand-gold text-sm mb-4"><i className="fas fa-download mr-2"></i> Instalar App</button>}
-                            <div className="pt-4 border-t border-white/10">
-                                <div className="text-sm text-white font-mono mb-2 truncate">{username}</div>
-                                <button onClick={onLogout} className="text-brand-danger text-sm hover:underline">Cerrar Sesión</button>
-                            </div>
+                            {isInstallable && <button onClick={install} className="w-full bg-white/5 p-3 rounded-xl text-brand-gold text-xs mt-2"><i className="fas fa-download mr-2"></i> Instalar App</button>}
                         </aside>
 
                         {/* MOBILE TOP BAR */}
-                        <div className="md:hidden fixed top-0 left-0 right-0 glass-panel p-4 flex justify-between items-center z-40 bg-brand-black/90 backdrop-blur border-b border-white/10 h-16">
+                        <div className="md:hidden fixed top-0 left-0 right-0 glass-panel px-4 py-3 flex justify-between items-center z-40 bg-black/95 backdrop-blur border-b border-white/10">
                             <div className="flex items-center gap-4">
-                                <button onClick={()=>setMobileMenuOpen(true)} className="text-white p-2"><i className="fas fa-bars text-xl"></i></button>
-                                <span className="font-serif text-brand-gold text-xl tracking-widest">LUMOS</span>
+                                <button onClick={()=>setMobileMenuOpen(true)} className="text-white p-1"><i className="fas fa-bars text-xl"></i></button>
+                                <span className="font-serif text-brand-gold text-lg tracking-widest">LUMOS</span>
                             </div>
-                            <button onClick={()=>setCartOpen(true)} className="text-white relative p-2">
-                                <i className="fas fa-shopping-cart text-xl"></i>
-                                {cart.length>0 && <span className="absolute top-0 right-0 w-4 h-4 bg-brand-danger rounded-full text-[10px] flex items-center justify-center font-bold">{cart.length}</span>}
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <button onClick={onLogout} className="text-red-400 p-1"><i className="fas fa-sign-out-alt text-lg"></i></button>
+                                <button onClick={()=>setCartOpen(true)} className="text-white relative p-1"><i className="fas fa-shopping-cart text-lg"></i>{cart.length>0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-brand-danger rounded-full text-[8px] flex items-center justify-center font-bold">{cart.length}</span>}</button>
+                            </div>
                         </div>
 
-                        {/* MOBILE MENU DRAWER */}
+                        {/* MOBILE MENU */}
                         {mobileMenuOpen && (
                             <div className="fixed inset-0 z-50 md:hidden flex">
                                 <div className="fixed inset-0 bg-black/90 backdrop-blur-sm" onClick={()=>setMobileMenuOpen(false)}></div>
-                                <div className="relative w-4/5 max-w-sm bg-brand-surface h-full shadow-2xl p-6 flex flex-col animate-slide-in">
-                                    <div className="flex justify-between items-center mb-8">
-                                        <h2 className="font-serif text-2xl text-white"><i className="fas fa-fingerprint text-brand-gold"></i> MENU</h2>
-                                        <button onClick={()=>setMobileMenuOpen(false)} className="text-gray-400 p-2"><i className="fas fa-times text-2xl"></i></button>
-                                    </div>
+                                <div className="relative w-3/4 max-w-sm bg-brand-surface h-full shadow-2xl p-5 flex flex-col animate-slide-in">
+                                    <div className="flex justify-between items-center mb-6"><h2 className="font-serif text-xl text-white"><i className="fas fa-fingerprint text-brand-gold mr-2"></i> MENU</h2><button onClick={()=>setMobileMenuOpen(false)} className="text-gray-400"><i className="fas fa-times text-xl"></i></button></div>
                                     <div className="flex-1 overflow-y-auto">
                                         <MenuItem icon="fa-store" label="Catálogo" target="store" />
                                         <MenuItem icon="fa-clock" label="Mis Pedidos" target="orders" />
                                         {role === 'admin' && (
                                             <>
-                                                <div className="py-4 text-xs text-gray-500 uppercase font-bold tracking-widest px-2">Panel de Control</div>
+                                                <div className="py-3 text-[10px] text-gray-500 uppercase font-bold tracking-widest px-2 mt-2">Admin</div>
                                                 <MenuItem icon="fa-chart-pie" label="Dashboard" target="dashboard" />
-                                                <MenuItem icon="fa-list" label="Monitor Pedidos" target="admin_orders" />
+                                                <MenuItem icon="fa-list" label="Monitor" target="admin_orders" />
                                                 <MenuItem icon="fa-boxes" label="Inventario" target="inventory" />
                                                 <MenuItem icon="fa-users" label="Usuarios" target="users" />
                                             </>
                                         )}
                                     </div>
-                                    <button onClick={onLogout} className="w-full bg-red-900/20 text-brand-danger p-4 rounded-xl font-bold mt-4">CERRAR SESIÓN</button>
+                                    <div className="text-xs text-brand-muted font-mono text-center pt-4">{username}</div>
                                 </div>
                             </div>
                         )}
 
-                        {/* MAIN CONTENT AREA */}
-                        <main className="flex-1 p-4 pt-20 md:p-10 md:pt-10 overflow-y-auto h-screen relative">
+                        {/* MAIN CONTENT */}
+                        <main className="flex-1 p-3 pt-20 md:p-8 md:pt-8 overflow-y-auto h-screen relative">
                             {view === 'store' && (
                                 <div className="animate-fade-in max-w-7xl mx-auto pb-24">
-                                    <h1 className="text-2xl md:text-4xl font-serif text-white mb-6 md:mb-8">Catálogo</h1>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                                    <h1 className="text-xl md:text-3xl font-serif text-white mb-4">Catálogo</h1>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
                                         {products.map(p => (
-                                            <div key={p.id} className="glass-panel rounded-2xl overflow-hidden group flex flex-row md:flex-col h-32 md:h-auto items-center md:items-stretch">
-                                                <div className="w-32 md:w-full h-full md:h-56 relative shrink-0">
-                                                    <img src={p.image} className="w-full h-full object-cover transition duration-700 group-hover:scale-110" onError={(e)=>e.target.src='https://via.placeholder.com/300?text=No+Image'}/>
+                                            <div key={p.id} className="glass-panel rounded-xl overflow-hidden group flex flex-col">
+                                                <div className="aspect-square w-full relative bg-black/50">
+                                                    <img src={p.image} className="w-full h-full object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/300?text=IMG'}/>
+                                                    <div className="absolute top-1 left-1 bg-black/70 px-1.5 py-0.5 text-[8px] text-white rounded">{p.category.substring(0,10)}</div>
                                                 </div>
-                                                <div className="p-4 flex-1 flex flex-col justify-between md:h-auto">
-                                                    <div>
-                                                        <div className="text-[10px] text-brand-muted uppercase tracking-wider mb-1">{p.category}</div>
-                                                        <h3 className="text-white font-medium text-lg leading-tight mb-2 line-clamp-2">{p.name}</h3>
-                                                    </div>
-                                                    <div className="flex justify-between items-center mt-auto">
-                                                        <span className="text-brand-gold text-xl font-serif">{Security.formatMoney(p.price)}</span>
-                                                        <button onClick={()=>addToCart(p)} className="w-10 h-10 rounded-full bg-white/10 hover:bg-brand-gold hover:text-black text-white flex items-center justify-center transition active:scale-90"><i className="fas fa-plus"></i></button>
+                                                <div className="p-3 flex-1 flex flex-col">
+                                                    <h3 className="text-white font-medium text-sm leading-tight mb-2 line-clamp-2 flex-1">{p.name}</h3>
+                                                    <div className="flex justify-between items-center mt-2">
+                                                        <span className="text-brand-gold text-sm font-serif">{Security.formatMoney(p.price)}</span>
+                                                        <button onClick={()=>addToCart(p)} className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center active:scale-90"><i className="fas fa-plus text-xs"></i></button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -648,32 +607,31 @@
                                     </div>
                                 </div>
                             )}
-
-                            {view === 'orders' && <div className="animate-fade-in max-w-3xl mx-auto"><h1 className="text-2xl md:text-3xl text-white mb-6">Mis Pedidos</h1><ClientOrderList user={user} /></div>}
-                            {view === 'dashboard' && role === 'admin' && <div className="animate-fade-in max-w-6xl mx-auto pb-20"><DashboardAnalytics /></div>}
-                            {view === 'admin_orders' && role === 'admin' && <div className="animate-fade-in max-w-6xl mx-auto pb-20"><h1 className="text-2xl md:text-3xl text-white mb-6">Monitor de Pedidos</h1><AdminOrderMonitor /></div>}
-                            {view === 'inventory' && role === 'admin' && <div className="animate-fade-in max-w-5xl mx-auto pb-20"><h1 className="text-2xl md:text-3xl text-white mb-6">Inventario</h1><ProductManager /></div>}
-                            {view === 'users' && role === 'admin' && <div className="animate-fade-in max-w-6xl mx-auto pb-20"><h1 className="text-2xl md:text-3xl text-white mb-6">Gestión de Usuarios</h1><UserManager /></div>}
+                            {view === 'orders' && <div className="animate-fade-in max-w-3xl mx-auto pb-24"><h1 className="text-xl text-white mb-4">Mis Pedidos</h1><ClientOrderList user={user} /></div>}
+                            {view === 'dashboard' && role === 'admin' && <div className="animate-fade-in max-w-6xl mx-auto pb-24"><DashboardAnalytics /></div>}
+                            {view === 'admin_orders' && role === 'admin' && <div className="animate-fade-in max-w-6xl mx-auto pb-24"><h1 className="text-xl text-white mb-4">Monitor</h1><AdminOrderMonitor /></div>}
+                            {view === 'inventory' && role === 'admin' && <div className="animate-fade-in max-w-5xl mx-auto pb-24"><h1 className="text-xl text-white mb-4">Inventario</h1><ProductManager /></div>}
+                            {view === 'users' && role === 'admin' && <div className="animate-fade-in max-w-6xl mx-auto pb-24"><h1 className="text-xl text-white mb-4">Usuarios</h1><UserManager /></div>}
                         </main>
 
                         {/* CARRITO */}
                         {cartOpen && (
                             <div className="fixed inset-0 z-[60] flex justify-end">
                                 <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={()=>setCartOpen(false)}></div>
-                                <div className="relative w-full md:w-[450px] bg-brand-surface h-full shadow-2xl flex flex-col p-6 animate-slide-in">
-                                    <div className="flex justify-between items-center mb-6"><h2 className="font-serif text-white text-2xl">Bolsa</h2><button onClick={()=>setCartOpen(false)} className="text-gray-400 p-2"><i className="fas fa-times text-2xl"></i></button></div>
-                                    <div className="flex-1 overflow-y-auto space-y-4">
-                                        {cart.length === 0 ? <div className="flex flex-col items-center justify-center h-full text-brand-muted"><i className="fas fa-shopping-basket text-4xl mb-4"></i><p>Tu bolsa está vacía.</p></div> : cart.map((item,i)=>(
-                                            <div key={i} className="flex gap-4 p-4 glass-panel rounded-xl items-center">
-                                                <img src={item.image} className="w-16 h-16 rounded-lg object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/50'}/>
-                                                <div className="flex-1 overflow-hidden"><p className="text-white text-base font-medium truncate">{item.name}</p><p className="text-brand-gold text-sm">{Security.formatMoney(item.price)}</p></div>
-                                                <button onClick={()=>removeFromCart(i)} className="text-brand-danger p-3"><i className="fas fa-trash"></i></button>
+                                <div className="relative w-full md:w-[400px] bg-brand-surface h-full shadow-2xl flex flex-col p-5 animate-slide-in">
+                                    <div className="flex justify-between items-center mb-6"><h2 className="font-serif text-white text-xl">Bolsa</h2><button onClick={()=>setCartOpen(false)} className="text-gray-400 p-2"><i className="fas fa-times text-xl"></i></button></div>
+                                    <div className="flex-1 overflow-y-auto space-y-3">
+                                        {cart.length === 0 ? <div className="flex flex-col items-center justify-center h-full text-brand-muted"><i className="fas fa-shopping-basket text-3xl mb-2"></i><p>Vacía.</p></div> : cart.map((item,i)=>(
+                                            <div key={i} className="flex gap-3 p-3 glass-panel rounded-lg items-center">
+                                                <img src={item.image} className="w-12 h-12 rounded object-cover bg-black" onError={(e)=>e.target.src='https://via.placeholder.com/50'}/>
+                                                <div className="flex-1 overflow-hidden"><p className="text-white text-sm truncate">{item.name}</p><p className="text-brand-gold text-xs">{Security.formatMoney(item.price)}</p></div>
+                                                <button onClick={()=>removeFromCart(i)} className="text-brand-danger p-2"><i className="fas fa-trash"></i></button>
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="mt-6 pt-6 border-t border-white/10">
-                                        <div className="flex justify-between mb-4 items-end"><span className="text-gray-400">Total</span><span className="text-brand-gold text-3xl font-serif">{Security.formatMoney(cart.reduce((a,b)=>a+b.price,0))}</span></div>
-                                        <button onClick={checkout} disabled={cart.length===0} className="w-full bg-brand-gold text-black font-bold py-5 rounded-xl text-sm uppercase tracking-widest hover:bg-white transition disabled:opacity-50">Confirmar Pedido</button>
+                                    <div className="mt-4 pt-4 border-t border-white/10">
+                                        <div className="flex justify-between mb-4 items-end"><span className="text-gray-400 text-sm">Total</span><span className="text-brand-gold text-2xl font-serif">{Security.formatMoney(cart.reduce((a,b)=>a+b.price,0))}</span></div>
+                                        <button onClick={checkout} disabled={cart.length===0} className="w-full bg-brand-gold text-black font-bold py-4 rounded-lg text-sm uppercase tracking-widest hover:bg-white transition disabled:opacity-50">Confirmar</button>
                                     </div>
                                 </div>
                             </div>
@@ -693,11 +651,14 @@
                 const processLogin = async (userAuth, isNewUser = false) => {
                     const userRef = doc(db, 'users', userAuth.uid);
                     const userSnap = await getDoc(userRef);
+                    // Capturar nombre exacto
                     const inputUser = Security.cleanUsername(userAuth.email);
+                    // O usar el nombre que viene en la input si es primera vez para asegurar casing
+                    const displayUser = username.trim() || inputUser; 
 
                     if (!userSnap.exists()) {
                         const initialRole = (inputUser.toUpperCase() === MASTER_KEY.toUpperCase()) ? 'admin' : 'client';
-                        await setDoc(userRef, { username: inputUser, email: userAuth.email, role: initialRole, registeredDeviceId: currentDeviceId, status: 'active', createdAt: serverTimestamp() });
+                        await setDoc(userRef, { username: displayUser, email: userAuth.email, role: initialRole, registeredDeviceId: currentDeviceId, status: 'active', createdAt: serverTimestamp() });
                         onLogin(userAuth, initialRole);
                     } else {
                         const data = userSnap.data();
@@ -729,24 +690,24 @@
                 const handleKey = (e) => setCapsLock(e.getModifierState("CapsLock"));
 
                 return (
-                    <div className="min-h-screen flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center">
+                    <div className="min-h-screen w-full flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center px-4">
                         <div className="absolute inset-0 bg-black/90 backdrop-blur-sm"></div>
-                        <div className="relative z-10 w-full max-w-md p-8 glass-panel rounded-2xl shadow-2xl animate-fade-in mx-4 flex flex-col gap-8">
+                        <div className="relative z-10 w-full max-w-sm glass-panel p-6 rounded-2xl shadow-2xl animate-fade-in flex flex-col gap-6">
                             <div className="text-center">
-                                <div className="w-24 h-24 bg-gradient-to-tr from-brand-gold to-yellow-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-brand-gold/20 transform rotate-12">
-                                    <i className="fas fa-fingerprint text-5xl text-black transform -rotate-12"></i>
+                                <div className="w-20 h-20 bg-gradient-to-tr from-brand-gold to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-brand-gold/20 transform rotate-12">
+                                    <i className="fas fa-fingerprint text-4xl text-black transform -rotate-12"></i>
                                 </div>
-                                <h1 className="font-serif text-4xl text-white tracking-widest mb-2">LUMOS</h1>
-                                <p className="text-brand-gold text-xs uppercase tracking-[0.4em]">Elite Access v16.0</p>
+                                <h1 className="font-serif text-3xl text-white tracking-widest mb-1">LUMOS</h1>
+                                <p className="text-brand-gold text-[10px] uppercase tracking-[0.4em]">Elite Access v19</p>
                             </div>
-                            {error && <div className="p-4 bg-red-900/30 border border-red-500/50 rounded-xl text-red-200 text-sm flex items-center gap-3 animate-pulse"><i className="fas fa-exclamation-triangle text-xl"></i> {error}</div>}
-                            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                                <input type="text" value={username} onChange={e=>setUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl p-5 text-white placeholder-gray-500 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest text-lg" placeholder="USUARIO" required />
-                                <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl p-5 text-white placeholder-gray-500 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest text-lg" placeholder="••••••••" required />
-                                {capsLock && <div className="text-center text-yellow-500 text-xs mt-2"><i className="fas fa-exclamation-triangle"></i> MAYÚSCULAS ACTIVADAS</div>}
-                                <button disabled={loading} className="w-full bg-brand-gold text-black font-bold py-5 rounded-xl mt-4 text-sm tracking-widest uppercase hover:scale-[1.02] transition-transform shadow-lg shadow-brand-gold/20">{loading ? '...' : 'INICIAR SESIÓN'}</button>
+                            {error && <div className="p-3 bg-red-900/30 border border-red-500/50 rounded-lg text-red-200 text-xs flex items-center gap-2 animate-pulse"><i className="fas fa-exclamation-triangle"></i> {error}</div>}
+                            <form onSubmit={handleSubmit} className="flex flex-col gap-3" onKeyUp={handleKey}>
+                                <input type="text" value={username} onChange={e=>setUsername(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl p-4 text-white placeholder-gray-500 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest text-base" placeholder="USUARIO" required />
+                                <input type="password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl p-4 text-white placeholder-gray-500 focus:border-brand-gold focus:outline-none font-mono text-center tracking-widest text-base" placeholder="••••••••" required />
+                                {capsLock && <div className="text-center text-yellow-500 text-[10px]"><i className="fas fa-exclamation-triangle"></i> MAYÚSCULAS ACTIVADAS</div>}
+                                <button disabled={loading} className="w-full bg-brand-gold text-black font-bold py-4 rounded-xl mt-2 text-sm tracking-widest uppercase hover:scale-[1.02] transition-transform shadow-lg shadow-brand-gold/20">{loading ? '...' : 'INICIAR SESIÓN'}</button>
                             </form>
-                            <div className="text-center"><p className="text-[10px] text-gray-500 font-mono">ID DISPOSITIVO: {currentDeviceId.substring(0,8)}...</p></div>
+                            <div className="text-center"><p className="text-[9px] text-gray-600 font-mono">ID DISPOSITIVO: {currentDeviceId.substring(0,8)}...</p></div>
                         </div>
                     </div>
                 );
