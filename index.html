@@ -197,19 +197,13 @@
                     return () => { unsubO(); unsubU(); unsubP(); }
                 }, []);
 
-                // Cálculos Financieros
                 const totalRev = orders.reduce((acc, o) => acc + (o.total || 0), 0);
                 const avgTicket = orders.length ? totalRev / orders.length : 0;
-                
-                // Cálculos Inventario
                 const inventoryValue = products.reduce((acc, p) => acc + (p.price * (p.stock || 0)), 0);
                 const lowStock = products.filter(p => (p.stock || 0) < 5).length;
-
-                // KPIs Logísticos
                 const delivered = orders.filter(o => o.status === 'Entregado').length;
                 const delayed = orders.filter(o => Security.isLate(o.createdAt, o.status)).length;
 
-                // Charts
                 React.useEffect(() => {
                     if(!orders.length) return;
                     const salesByDate = {};
@@ -273,12 +267,12 @@
                 );
             };
 
-            // --- PRODUCT MANAGER (CON EDICIÓN) ---
+            // --- PRODUCT MANAGER (CON EDICIÓN Y ELIMINACIÓN) ---
             const ProductManager = () => {
                 const [products, setProducts] = React.useState([]);
                 const [newProd, setNewProd] = React.useState({ name: '', price: '', category: 'Hardware', image: '', stock: 0 });
                 const [selected, setSelected] = React.useState([]);
-                const [editingProd, setEditingProd] = React.useState(null); // Estado para producto en edición
+                const [editingProd, setEditingProd] = React.useState(null); 
                 const fileInputRef = React.useRef();
 
                 React.useEffect(() => onSnapshot(collection(db, 'products'), (s) => setProducts(s.docs.map(d => ({id: d.id, ...d.data()})))), []);
@@ -300,10 +294,7 @@
                             image: editingProd.image
                         });
                         setEditingProd(null);
-                        alert("Producto actualizado.");
-                    } catch (e) {
-                        alert("Error al actualizar: " + e.message);
-                    }
+                    } catch (e) { alert("Error al actualizar: " + e.message); }
                 };
 
                 const toggleSelect = (id) => {
@@ -317,6 +308,11 @@
                     selected.forEach(id => batch.delete(doc(db, 'products', id)));
                     await batch.commit();
                     setSelected([]);
+                };
+
+                const deleteSingle = async (id) => {
+                    if(!confirm("¿Eliminar este producto?")) return;
+                    await deleteDoc(doc(db, 'products', id));
                 };
 
                 const downloadTemplate = () => {
@@ -397,7 +393,7 @@
                                     </div>
                                     <div className="absolute top-2 right-2 z-10 flex gap-1">
                                         <button onClick={()=>setEditingProd(p)} className="bg-blue-500/80 text-white w-6 h-6 rounded flex items-center justify-center hover:bg-blue-600 transition"><i className="fas fa-edit text-xs"></i></button>
-                                        <button onClick={()=>deleteDoc(doc(db,'products',p.id))} className="bg-red-500/80 text-white w-6 h-6 rounded flex items-center justify-center hover:bg-red-600 transition"><i className="fas fa-times text-xs"></i></button>
+                                        <button onClick={()=>deleteSingle(p.id)} className="bg-red-500/80 text-white w-6 h-6 rounded flex items-center justify-center hover:bg-red-600 transition"><i className="fas fa-trash text-xs"></i></button>
                                     </div>
                                     <div className="h-20 bg-black/50 rounded mb-2 overflow-hidden"><img src={p.image} className="w-full h-full object-cover" onError={(e)=>e.target.src='https://via.placeholder.com/150'} /></div>
                                     <div className="text-white text-xs truncate font-bold">{p.name}</div>
